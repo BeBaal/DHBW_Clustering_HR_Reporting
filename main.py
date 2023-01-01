@@ -30,13 +30,14 @@ def main():
 
     save_statistical_summary(dataframe)
 
-    # Set initial figures for clustering
-    keyfigure_x = 'Fluktuation'  # stays the same
+    # Set x variable for clustering that stays the same
+    keyfigure_x = 'Fluktuation'
 
+    # Get a list of keyfigures to set keyfigure_y to
     keyfigures = get_keyfigures(dataframe)
 
     for keyfigure_y in keyfigures:
-        # comparison with itself not necessary
+        # comparison with itself is not necessary
         if keyfigure_y == keyfigure_x:
             continue
 
@@ -46,7 +47,7 @@ def main():
             keyfigure_x,
             keyfigure_y)
 
-        clustering(data, keyfigure_x, keyfigure_y)
+        clustering(data, 3, keyfigure_x, keyfigure_y)
 
 
 def get_keyfigures(dataframe):
@@ -57,7 +58,7 @@ def get_keyfigures(dataframe):
         dataframe (pandas dataframe): dataframe of the analysis
 
     Returns:
-        list: List of keyfigures for analysis
+        list: HR keyfigures for analysis from dataset
     """
     # Get names of columns
     keyfigures = list(dataframe)
@@ -173,7 +174,7 @@ def save_statistical_summary(dataframe):
         r'C:\FPA2\Daten_Forschungsprojektarbeit_2\StatisticalData.xlsx')
 
 
-def clustering(data, keyfigure_x, keyfigure_y):
+def clustering(data, number_of_clusters, keyfigure_x, keyfigure_y):
     """This method calls the clustering methods and is acting as an interface
     to the different clustering algorithms.
 
@@ -185,18 +186,19 @@ def clustering(data, keyfigure_x, keyfigure_y):
     logging.info('clustering method was called')
 
     # centroid based clustering methods
-    kmeans(data, 3, keyfigure_x, keyfigure_y)
+    kmeans(data, number_of_clusters, keyfigure_x, keyfigure_y)
 
     # Density based clustering methods
     dbscan(data, keyfigure_x, keyfigure_y)
     # optics
 
     # distribution based clustering methods
-    gaussian(data, keyfigure_x, keyfigure_y)
+    gaussian(data, number_of_clusters, keyfigure_x, keyfigure_y)
 
     # Hierarchy based clustering methods
-    birch(data, 3, keyfigure_x, keyfigure_y)
-    agglomerative_clustering(data, 3, keyfigure_x, keyfigure_y)
+    birch(data, number_of_clusters, keyfigure_x, keyfigure_y)
+    agglomerative_clustering(data, number_of_clusters,
+                             keyfigure_x, keyfigure_y)
     # mean-shift
 
 
@@ -206,8 +208,8 @@ def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
     Args:
         data (numpy array): Two dimensional array of HR keyfigures for regional departments
         number_cluster (integer): Number of clusters for analysis
-        keyfigure_x (_type_): First keyfigure
-        keyfigure_y (_type_): Second keyfigure
+        keyfigure_x (string): First keyfigure
+        keyfigure_y (string): Second keyfigure
     """
     logging.info('clustering method kmeans was called')
 
@@ -247,15 +249,50 @@ def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
     plt.title("KMEANS "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.text(60, .025, 'n=15')
     plt.legend()
 
     plt.savefig(filenpath_and_name)
     plt.close()
 
 
-def gaussian(data, keyfigure_x, keyfigure_y):
-    pass
+def gaussian(data, number_cluster, keyfigure_x, keyfigure_y):
+    """This method clusters the data via k means.
+
+    Args:
+        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        number_cluster (integer): Number of clusters for analysis
+        keyfigure_x (string): First keyfigure
+        keyfigure_y (string): Second keyfigure
+    """
+    logging.info('clustering method kmeans was called')
+
+    filenpath_and_name = r'C:\FPA2\Figures\Gaussian\Plot_' + keyfigure_y + '.png'
+
+    # Declaring Model
+    model = GaussianMixture(n_components=number_cluster)
+
+    # Fitting Model
+    model.fit(data)
+
+    # predict the labels of clusters.
+    label = model.fit_predict(data)
+
+    # Getting unique labels
+    u_labels = np.unique(label)
+
+    # plotting the results
+    for i in u_labels:
+        plt.scatter(data[label == i, 0],
+                    data[label == i, 1],
+                    label='Cluster ' + str(i) + ' n='+str(np.count_nonzero(label == i)))
+
+    plt.title("Gaussian "+keyfigure_x + " / " + keyfigure_y)
+    plt.xlabel(keyfigure_x)
+    plt.ylabel(keyfigure_y)
+    plt.legend()
+
+    plt.savefig(filenpath_and_name)
+    plt.close()
 
 
 def dbscan(data, keyfigure_x, keyfigure_y):
@@ -263,8 +300,8 @@ def dbscan(data, keyfigure_x, keyfigure_y):
 
     Args:
         data (numpy array): Two dimensional array of HR keyfigures for regional departments
-        keyfigure_x (_type_): First keyfigure for analysis
-        keyfigure_y (_type_): Second keyfigure for analysis
+        keyfigure_x (string): First keyfigure for analysis
+        keyfigure_y (string): Second keyfigure for analysis
     """
     logging.info('clustering method dbscan was called')
 
@@ -291,7 +328,6 @@ def dbscan(data, keyfigure_x, keyfigure_y):
     plt.title("DBSCAN "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.text(60, .025, 'n=15')
     plt.legend()
 
     plt.savefig(filenpath_and_name)
