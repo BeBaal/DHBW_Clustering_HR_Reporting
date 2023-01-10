@@ -1,12 +1,17 @@
 """This program is used  for an exploratory data analysis of different clustering
     methods regarding their use for reporting purposes. Data used is aggregated
     reporting data from Lidl regional departments and mostly on the topic
-    Human Resources. The Analysis is part of my research project at DHBW CAS in
-    Heilbronn for my Master in Business Informatics.
+    Human Resources. The Analysis is part of my research project
+    "Clusteringverfahren und deren Einsatzmöglichkeiten im Personalreporting:
+    Ein Anwendungsbeispiel" at DHBW CAS in Heilbronn for my Master in Business
+    Informatics.
 
+    License: MIT
     Author: Bernd Baalmann
 """
 # Import statements
+import os
+import time
 import logging
 import seaborn as sns
 import numpy as np
@@ -24,9 +29,13 @@ def main():
     """This is the main method of the program """
     logging.info("Main function was called")
 
+    # get the start time
+    start_time = time.time()
+
     dataframe = load_files()
 
     plot_distribution(dataframe)
+    plot_correlation(dataframe)
 
     save_statistical_summary(dataframe)
 
@@ -41,21 +50,78 @@ def main():
         if keyfigure_y == keyfigure_x:
             continue
 
-        # Remove not necessary attributes and scale data
-        data = setup_data(
+        # Remove not necessary features and scale data
+        data = setup_data_clustering_algorithm(
             dataframe,
             keyfigure_x,
             keyfigure_y)
 
-        clustering(data, 3, keyfigure_x, keyfigure_y)
+        clustering(data, 2, keyfigure_x, keyfigure_y)
+
+        # Remove not necessary features and scale data
+        data = setup_data_clustering_traditionally(
+            dataframe,
+            keyfigure_x,
+            keyfigure_y)
+
+        traditional_clustering(data, keyfigure_x, keyfigure_y)
+
+    # get end time
+    end_time = time.time()
+
+    # calculate calculation time
+    elapsed_time = end_time - start_time
+    print('Execution time:', elapsed_time, 'seconds')
+
+
+def delete_results():
+    """For convenience and error pruning this function deletes the old results
+    files from the result folders of the clustering figures. The descriptive
+    summary does not get deleted.
+    """
+    paths = [r'C:\FPA2\Figures\BIRCH\\',
+             r'C:\FPA2\Figures\DBScan\\',
+             r'C:\FPA2\Figures\Gaussian\\',
+             r'C:\FPA2\Figures\KMeans\\',
+             r'C:\FPA2\Figures\Traditional_Clusters\\',
+             r'C:\FPA2\Figures\Agglomeratives_Clustering\\']
+
+    for path in paths:
+        for file_name in os.listdir(path):
+
+            # construct full file path
+            file = path + file_name
+            if os.path.isfile(file):
+                # print('Deleting file:', file)
+                os.remove(file)
+
+
+def traditional_clustering(dataframe, keyfigure_x, keyfigure_y):
+    """This function defines the traditional reporting cluster categories and
+    does the loop logic over the different clusters. Additionally the corresponding
+    plotting function is called here.
+
+    Args:
+        dataframe (pandas dataframe): HR KPI dataframe
+        keyfigure_x (string): First keyfigure for analysis
+        keyfigure_y (string): Second keyfigure for analysis
+    """
+    categories = ["Lidl Land", "Lidl Gesellschaftstyp"]
+
+    for category in categories:
+        plot_2_keyfigures_categorical(
+            dataframe,
+            category,
+            keyfigure_x,
+            keyfigure_y)
 
 
 def get_keyfigures(dataframe):
     """This functions checks the dataframe for relevant keyfigures and gives
-    them back as a list. Also removes unnecessary attributes.
+    them back as a list. Also removes unnecessary features.
 
     Args:
-        dataframe (pandas dataframe): dataframe of the analysis
+        dataframe (pandas dataframe): HR KPI dataframe
 
     Returns:
         list: HR keyfigures for analysis from dataset
@@ -63,7 +129,7 @@ def get_keyfigures(dataframe):
     # Get names of columns
     keyfigures = list(dataframe)
 
-    # Remove not necessary attributes
+    # Remove not necessary features
     keyfigures.remove('Concat')
     keyfigures.remove('Lidl Land')
     keyfigures.remove('Lidl Land Langtext')
@@ -77,7 +143,7 @@ def load_files():
     """Loads Excel files and returns a dataframe
 
     Returns:
-        pandas dataframe: Sheet Daten_GES as a dataframe
+        pandas dataframe: Sheet Daten_GES from excel  file as a dataframe
     """
 
     logging.info("Load_files function was called")
@@ -92,7 +158,7 @@ def load_files():
     return dataframe
 
 
-def setup_data(dataframe, keyfigure_x, keyfigure_y):
+def setup_data_clustering_algorithm(dataframe, keyfigure_x, keyfigure_y):
     """This method removes unnecessary parts from the dataframe, deletes Null
     Values, establishes a standard scaling and sets the result up as a numpy
     array.
@@ -107,7 +173,7 @@ def setup_data(dataframe, keyfigure_x, keyfigure_y):
     """
     logging.info('Setup function was called')
 
-    #  Remove unnecessary attributes from dataframe
+    #  Remove unnecessary features from dataframe
     dataframe = dataframe.loc[:, [
         keyfigure_x,
         keyfigure_y]]
@@ -124,21 +190,60 @@ def setup_data(dataframe, keyfigure_x, keyfigure_y):
     return data
 
 
-def plot_2_attributes(dataframe, input_x, input_y):
-    """This method plots two attributes from a dataframe.
+def setup_data_clustering_traditionally(dataframe, keyfigure_x, keyfigure_y):
+    """This method removes unnecessary parts from the dataframe and deletes
+    Null Values.
+
+    Args:
+        dataframe (pandas dataframe): HR KPI dataframe
+        keyfigure_x (string): First keyfigure for analysis
+        keyfigure_y (string): Second keyfigure for analysis
+
+    Returns:
+        pandas dataframe: data for further analysis
+    """
+    logging.info('Setup function was called')
+
+    #  Remove unnecessary features from dataframe
+    dataframe = dataframe.loc[:,
+                              ["Lidl Land",
+                               "Lidl Gesellschaftstyp",
+                               keyfigure_x,
+                               keyfigure_y]]
+
+    # data cleansing
+    # No NaN Values
+    dataframe.dropna(axis=0, how="any", inplace=True)
+
+    return dataframe
+
+
+def plot_2_keyfigures_categorical(dataframe, category, keyfigure_x, keyfigure_y):
+    """This method plots two keyfigures from a dataframe categorically.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
         input_x (string): First keyfigure
         input_y (string): Second keyfigure
     """
-    logging.info('plot_2_attributes function was called')
+    logging.info('plot_2_keyfigures_categorical function was called')
+
+    filenpath_and_name = r'C:\FPA2\Figures\Traditional_Clusters\Plot_' + \
+        category + "_" + keyfigure_y + '.svg'
 
     sns.scatterplot(data=dataframe,
-                    x=input_x,
-                    y=input_y,
-                    hue='Lidl Land')
-    plt.show()
+                    x=keyfigure_x,
+                    y=keyfigure_y,
+                    hue=category)
+
+    plt.title(category+" "+keyfigure_x + " / " + keyfigure_y)
+    plt.xlabel(keyfigure_x)
+    plt.ylabel(keyfigure_y)
+    # plt.legend(loc=(1.04, 0))
+    # plt.subplots_adjust(right=0.7)
+    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.savefig(filenpath_and_name, bbox_inches="tight")
+    plt.close()
 
 
 def plot_distribution(dataframe):
@@ -149,12 +254,73 @@ def plot_distribution(dataframe):
     """
     logging.info('plot_distribution function was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Attribute_Distribution.png'
+    filenpath_and_name = r'C:\FPA2\Figures\Attribute_Distribution.svg'
 
-    dataframe.hist(bins=30,
+    dataframe.hist(bins=10,
                    figsize=(20, 20),
                    color='b',
                    alpha=0.6)
+    plt.savefig(filenpath_and_name)
+    plt.close()
+
+
+def plot_correlation(dataframe):
+    """This method plots the correlation of the relevant keyfigures. See also
+    https://medium.com/@szabo.bibor/how-to-create-a-seaborn-correlation-heatmap-in-python-834c0686b88e
+    for example heatmap implementation.
+
+    Args:
+        dataframe (pandas dataframe): HR KPI dataframe
+    """
+    logging.info('plot_cross_correlation function was called')
+
+    # Triangle cross correlation
+    filenpath_and_name = r'C:\FPA2\Figures\Attribute_Cross_Correlation.svg'
+
+    plt.figure(figsize=(16, 10))
+
+    mask = np.triu(np.ones_like(dataframe.corr(
+        numeric_only=True),
+        dtype=np.bool_))
+
+    heatmap = sns.heatmap(dataframe.corr(numeric_only=True),
+                          vmin=-1,
+                          vmax=1,
+                          mask=mask,
+                          annot=True,
+                          cmap='BrBG')
+
+    heatmap.set_title('Correlation Heatmap',
+                      fontdict={'fontsize': 12},
+                      pad=12)
+
+    plt.tight_layout()
+    plt.savefig(filenpath_and_name)
+    plt.close()
+
+    # Single correlation
+    filenpath_and_name = r'C:\FPA2\Figures\Attribute_Single_Correlation.svg'
+
+    dataframe.corr(numeric_only=True)[['Fluktuation']].sort_values(
+        by='Fluktuation',
+        ascending=False)
+
+    plt.figure(figsize=(9, 12))
+
+    heatmap = sns.heatmap(dataframe.corr(numeric_only=True)[
+        ['Fluktuation']].sort_values(
+        by='Fluktuation',
+        ascending=False),
+        vmin=-1,
+        vmax=1,
+        annot=True,
+        cmap='BrBG')
+
+    heatmap.set_title('Features Correlating with Fluctuation',
+                      fontdict={'fontsize': 18},
+                      pad=16)
+
+    plt.tight_layout()
     plt.savefig(filenpath_and_name)
     plt.close()
 
@@ -186,19 +352,33 @@ def clustering(data, number_of_clusters, keyfigure_x, keyfigure_y):
     logging.info('clustering method was called')
 
     # centroid based clustering methods
-    kmeans(data, number_of_clusters, keyfigure_x, keyfigure_y)
+    kmeans(data,
+           number_of_clusters,
+           keyfigure_x,
+           keyfigure_y)
 
     # Density based clustering methods
-    dbscan(data, keyfigure_x, keyfigure_y)
+    dbscan(data,
+           keyfigure_x,
+           keyfigure_y)
     # optics
 
     # distribution based clustering methods
-    gaussian(data, number_of_clusters, keyfigure_x, keyfigure_y)
+    gaussian(data,
+             number_of_clusters,
+             keyfigure_x,
+             keyfigure_y)
 
     # Hierarchy based clustering methods
-    birch(data, number_of_clusters, keyfigure_x, keyfigure_y)
-    agglomerative_clustering(data, number_of_clusters,
-                             keyfigure_x, keyfigure_y)
+    birch(data,
+          number_of_clusters,
+          keyfigure_x,
+          keyfigure_y)
+
+    agglomerative_clustering(data,
+                             number_of_clusters,
+                             keyfigure_x,
+                             keyfigure_y)
     # mean-shift
 
 
@@ -206,22 +386,19 @@ def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
     """This method clusters the data via k means.
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Two dimensional array of HR keyfigures
         number_cluster (integer): Number of clusters for analysis
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Second keyfigure
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\KMeans\Plot_' + keyfigure_y + '.png'
+    filenpath_and_name = r'C:\FPA2\Figures\KMeans\Plot_' + keyfigure_y + '.svg'
 
     # Declaring Model with some parameters
     model = KMeans(
-        init="random",
         n_clusters=number_cluster,
-        n_init=10,
-        max_iter=300,
-        random_state=42
+        n_init='auto'
     )
 
     # Fitting Model
@@ -240,7 +417,8 @@ def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
     for i in u_labels:
         plt.scatter(data[label == i, 0],
                     data[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(np.count_nonzero(label == i)))
+                    label='Cluster ' + str(i) + ' n=' + str(
+                        np.count_nonzero(label == i)))
 
     plt.scatter(centroids[:, 0],
                 centroids[:, 1],
@@ -266,7 +444,7 @@ def gaussian(data, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Gaussian\Plot_' + keyfigure_y + '.png'
+    filenpath_and_name = r'C:\FPA2\Figures\Gaussian\Plot_' + keyfigure_y + '.svg'
 
     # Declaring Model
     model = GaussianMixture(n_components=number_cluster)
@@ -284,7 +462,8 @@ def gaussian(data, number_cluster, keyfigure_x, keyfigure_y):
     for i in u_labels:
         plt.scatter(data[label == i, 0],
                     data[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(np.count_nonzero(label == i)))
+                    label='Cluster ' + str(i) + ' n=' + str(
+                        np.count_nonzero(label == i)))
 
     plt.title("Gaussian "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
@@ -305,7 +484,7 @@ def dbscan(data, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method dbscan was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\DBscan\Plot_' + keyfigure_y + '.png'
+    filenpath_and_name = r'C:\FPA2\Figures\DBscan\Plot_' + keyfigure_y + '.svg'
 
     # Declaring Model
     model = DBSCAN()
@@ -323,7 +502,8 @@ def dbscan(data, keyfigure_x, keyfigure_y):
     for i in u_labels:
         plt.scatter(data[label == i, 0],
                     data[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(np.count_nonzero(label == i)))
+                    label='Cluster ' + str(i) + ' n='+str(
+                        np.count_nonzero(label == i)))
 
     plt.title("DBSCAN "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
@@ -345,7 +525,7 @@ def birch(data, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\BIRCH\Plot_' + keyfigure_y + '.png'
+    filenpath_and_name = r'C:\FPA2\Figures\BIRCH\Plot_' + keyfigure_y + '.svg'
 
     # Declaring Model with some parameters
     model = Birch(
@@ -365,7 +545,8 @@ def birch(data, number_cluster, keyfigure_x, keyfigure_y):
     for i in u_labels:
         plt.scatter(data[label == i, 0],
                     data[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(np.count_nonzero(label == i)))
+                    label='Cluster ' + str(i) + ' n='+str(
+                        np.count_nonzero(label == i)))
 
     plt.title("Birch "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
@@ -387,7 +568,7 @@ def agglomerative_clustering(data, number_cluster, keyfigure_x, keyfigure_y):
     logging.info('clustering method agglomerative_clustering was called')
 
     filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_' + \
-        keyfigure_y + '.png'
+        keyfigure_y + '.svg'
 
     # Declaring Model with some parameters
     model = AgglomerativeClustering(
@@ -407,7 +588,8 @@ def agglomerative_clustering(data, number_cluster, keyfigure_x, keyfigure_y):
     for i in u_labels:
         plt.scatter(data[label == i, 0],
                     data[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(np.count_nonzero(label == i)))
+                    label='Cluster ' + str(i) + ' n='+str(
+                        np.count_nonzero(label == i)))
 
     plt.title("Agglomeratives Clustering "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
