@@ -25,8 +25,8 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 
 # Options
-option_use_standardscaler = True # ToDo Implementation of option_use_standardscaler
-option_descaling_keyfigures = False # ToDo Implementation of option_use_standardscaler
+OPTION_USE_STANDARDSCALER = True  # ToDo Implement option_use_standardscaler
+OPTION_DESCALING_KEYFIGURES = False  # ToDo Implement option_use_standardscaler
 
 
 def main():
