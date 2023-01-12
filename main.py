@@ -57,6 +57,8 @@ def main():
             keyfigure_y)
 
         clustering(data, 2, keyfigure_x, keyfigure_y)
+        clustering(data, 31, keyfigure_x, keyfigure_y)
+        plot_density(data, keyfigure_x, keyfigure_y)
 
         # Remove not necessary features and scale data
         data = setup_data_clustering_traditionally(
@@ -94,6 +96,51 @@ def delete_results():
             if os.path.isfile(file):
                 # print('Deleting file:', file)
                 os.remove(file)
+
+
+def filter_countries(dataframe):
+
+    return dataframe
+
+
+def plot_density(data, keyfigure_x, keyfigure_y):
+    """This method plots two keyfigures from a dataframe categorically.
+
+    Args:
+        dataframe (pandas dataframe): HR KPI dataframe
+        input_x (string): First keyfigure
+        input_y (string): Second keyfigure
+    """
+    logging.info('plot_2_keyfigures_categorical function was called')
+
+    filenpath_and_name = r'C:\FPA2\Figures\Traditional_Clusters\Plot_' + \
+        "_" + keyfigure_y + '.svg'
+
+    # set seaborn style
+    sns.set_style("white")
+
+    # Basic 2D density plot
+    sns.kdeplot(data=data, x=keyfigure_x, y=keyfigure_y)
+    plt.show()
+
+    # Custom the color, add shade and bandwidth
+    # sns.kdeplot(x=data[1], y=data[2],
+    #             cmap="Reds", shade=True, bw_adjust=.5)
+    # plt.show()
+
+    # Add thresh parameter
+    # sns.kdeplot(x=data[keyfigure_x], y=data[keyfigure_y],
+    #             cmap="Blues", shade=True, thresh=0)
+    # plt.show()
+
+    # plt.title(category+" "+keyfigure_x + " / " + keyfigure_y)
+    # plt.xlabel(keyfigure_x)
+    # plt.ylabel(keyfigure_y)
+    # # plt.legend(loc=(1.04, 0))
+    # # plt.subplots_adjust(right=0.7)
+    # plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    # plt.savefig(filenpath_and_name, bbox_inches="tight")
+    # plt.close()
 
 
 def traditional_clustering(dataframe, keyfigure_x, keyfigure_y):
@@ -260,7 +307,7 @@ def plot_distribution(dataframe):
                    figsize=(20, 20),
                    color='b',
                    alpha=0.6)
-    plt.savefig(filenpath_and_name)
+    plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
 
@@ -424,7 +471,8 @@ def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
                 centroids[:, 1],
                 c='black')
 
-    plt.title("KMEANS "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("KMEANS C_"+str(number_cluster) +
+              " "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     plt.legend()
@@ -465,7 +513,8 @@ def gaussian(data, number_cluster, keyfigure_x, keyfigure_y):
                     label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Gaussian "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("Gaussian C_"+str(number_cluster)+" " +
+              keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     plt.legend()
@@ -548,7 +597,8 @@ def birch(data, number_cluster, keyfigure_x, keyfigure_y):
                     label='Cluster ' + str(i) + ' n='+str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Birch "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("Birch C_"+str(number_cluster)+" " +
+              keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     plt.legend()
@@ -591,7 +641,8 @@ def agglomerative_clustering(data, number_cluster, keyfigure_x, keyfigure_y):
                     label='Cluster ' + str(i) + ' n='+str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Agglomeratives Clustering "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("Agglomeratives Clustering C_"+str(number_cluster) +
+              " "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     plt.legend()
