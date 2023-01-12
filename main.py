@@ -24,6 +24,10 @@ from sklearn.cluster import Birch
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 
+# Options
+OPTION_USE_STANDARDSCALER = True  # ToDo Implement option_use_standardscaler
+OPTION_DESCALING_KEYFIGURES = False  # ToDo Implement option_use_standardscaler
+
 
 def main():
     """This is the main method of the program """
