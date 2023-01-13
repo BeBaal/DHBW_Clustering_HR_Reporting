@@ -25,12 +25,19 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 
 # Options
-OPTION_USE_STANDARDSCALER = True  # ToDo Implement option_use_standardscaler
-OPTION_DESCALING_KEYFIGURES = False  # ToDo Implement option_use_standardscaler
+OPTION_USE_STANDARDSCALER = True
+OPTION_DESCALING_KEYFIGURES = True
+OPTION_FILTER_COUNTRIES = False
+# If OPTION_FILTER_COUNTRIES equals true
+OPTION_COUNTRY_LIST = ["DE",
+                       "FR",
+                       "US",
+                       "NL"]
 
 
 def main():
-    """This is the main method of the program """
+    """This is the main method of the program. Here the loop logic is
+    implemented and most of the function calls"""
     logging.info("Main function was called")
 
     # get the start time
@@ -38,9 +45,13 @@ def main():
 
     dataframe = load_files()
 
+    if OPTION_FILTER_COUNTRIES is True:
+        dataframe = filter_countries(dataframe)
+
+    number_of_countries = len(dataframe["Lidl Land"].unique())
+
     plot_distribution(dataframe)
     plot_correlation(dataframe)
-
     save_statistical_summary(dataframe)
 
     # Set x variable for clustering that stays the same
@@ -54,15 +65,15 @@ def main():
         if keyfigure_y == keyfigure_x:
             continue
 
-        # Remove not necessary features and scale data
+        # Remove not necessary features
         data = setup_data_clustering_algorithm(
             dataframe,
             keyfigure_x,
             keyfigure_y)
 
         clustering(data, 2, keyfigure_x, keyfigure_y)
-        clustering(data, 31, keyfigure_x, keyfigure_y)
-        plot_density(data, keyfigure_x, keyfigure_y)
+        clustering(data, number_of_countries, keyfigure_x, keyfigure_y)
+        #plot_density(data, keyfigure_x, keyfigure_y)
 
         # Remove not necessary features and scale data
         data = setup_data_clustering_traditionally(
@@ -78,6 +89,45 @@ def main():
     # calculate calculation time
     elapsed_time = end_time - start_time
     print('Execution time:', elapsed_time, 'seconds')
+
+
+def descale_dataframe(dataframe, scaler):
+    """This function descales the data with the mean and standard deviation of
+    the former used standard scaler object.
+
+    Args:
+        dataframe (numpy array): HR KPI dataframe
+        scaler (standard scaler object): Standard Scaler
+
+    Returns:
+        numpy array: HR KPI numpy array
+    """
+    if OPTION_DESCALING_KEYFIGURES is True:
+        # transforms Dataframe to numpy array
+        data = scaler.inverse_transform(dataframe)
+
+    return data
+
+
+def scale_dataframe(dataframe):
+    """This function scales the data with the standard scaler. Sets mean to 0
+    and the standard deviation to 1. In the scaler object the former mean and
+    standard deviation is saved for future descaling.
+
+    Args:
+        dataframe (pandas dataframe): _description_
+
+    Returns:
+        numpy array: HR KPI dataframe
+        standard scaler object: Standard Scaler
+    """
+    if OPTION_USE_STANDARDSCALER is True:
+        # Scale the values from 0 to 1
+        scaler = StandardScaler(copy=False)
+        # transforms Dataframe to numpy array
+        data = scaler.fit_transform(dataframe)
+
+    return data, scaler
 
 
 def delete_results():
@@ -98,11 +148,22 @@ def delete_results():
             # construct full file path
             file = path + file_name
             if os.path.isfile(file):
-                # print('Deleting file:', file)
+                print('Deleting file:', file)
                 os.remove(file)
 
 
 def filter_countries(dataframe):
+    """This function takes the class variable OPTION_COUNTRIES and filters the
+    dataframe correspondingly.
+
+    Args:
+        dataframe (pandas dataframe): HR KPI dataframe
+
+    Returns:
+        pandas dataframe: Filtered HR KPI dataframe
+    """
+
+    dataframe = dataframe.loc[dataframe['Lidl Land'].isin(OPTION_COUNTRY_LIST)]
 
     return dataframe
 
@@ -233,12 +294,7 @@ def setup_data_clustering_algorithm(dataframe, keyfigure_x, keyfigure_y):
     # KMeans can not handle NaN Values
     dataframe.dropna(axis=0, how="any", inplace=True)
 
-    # Scale the values from 0 to 1
-    scaler = StandardScaler(copy=False)
-    # transforms Dataframe to numpy array
-    data = scaler.fit_transform(dataframe)
-
-    return data
+    return dataframe
 
 
 def setup_data_clustering_traditionally(dataframe, keyfigure_x, keyfigure_y):
@@ -433,7 +489,7 @@ def clustering(data, number_of_clusters, keyfigure_x, keyfigure_y):
     # mean-shift
 
 
-def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
+def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """This method clusters the data via k means.
 
     Args:
@@ -444,7 +500,10 @@ def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\KMeans\Plot_' + keyfigure_y + '.svg'
+    filenpath_and_name = r'C:\FPA2\Figures\KMeans\Plot_C' + \
+        str(number_cluster) + "_" + keyfigure_y + '.svg'
+
+    dataframe, scaler = scale_dataframe(dataframe)
 
     # Declaring Model with some parameters
     model = KMeans(
@@ -453,10 +512,10 @@ def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
     )
 
     # Fitting Model
-    model.fit(data)
+    model.fit(dataframe)
 
     # predict the labels of clusters.
-    label = model.fit_predict(data)
+    label = model.fit_predict(dataframe)
 
     # Getting the centroids center
     centroids = model.cluster_centers_
@@ -464,10 +523,12 @@ def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
     # Getting unique labels
     u_labels = np.unique(label)
 
+    dataframe = descale_dataframe(dataframe, scaler)
+
     # plotting the results
     for i in u_labels:
-        plt.scatter(data[label == i, 0],
-                    data[label == i, 1],
+        plt.scatter(dataframe[label == i, 0],
+                    dataframe[label == i, 1],
                     label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
@@ -479,13 +540,13 @@ def kmeans(data, number_cluster, keyfigure_x, keyfigure_y):
               " "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend()
+    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
 
-    plt.savefig(filenpath_and_name)
+    plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
 
-def gaussian(data, number_cluster, keyfigure_x, keyfigure_y):
+def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """This method clusters the data via k means.
 
     Args:
@@ -496,24 +557,29 @@ def gaussian(data, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Gaussian\Plot_' + keyfigure_y + '.svg'
+    filenpath_and_name = r'C:\FPA2\Figures\Gaussian\Plot_C' + \
+        str(number_cluster) + "_" + keyfigure_y + '.svg'
+
+    dataframe, scaler = scale_dataframe(dataframe)
 
     # Declaring Model
     model = GaussianMixture(n_components=number_cluster)
 
     # Fitting Model
-    model.fit(data)
+    model.fit(dataframe)
 
     # predict the labels of clusters.
-    label = model.fit_predict(data)
+    label = model.fit_predict(dataframe)
 
     # Getting unique labels
     u_labels = np.unique(label)
 
+    dataframe = descale_dataframe(dataframe, scaler)
+
     # plotting the results
     for i in u_labels:
-        plt.scatter(data[label == i, 0],
-                    data[label == i, 1],
+        plt.scatter(dataframe[label == i, 0],
+                    dataframe[label == i, 1],
                     label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
@@ -521,13 +587,13 @@ def gaussian(data, number_cluster, keyfigure_x, keyfigure_y):
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend()
+    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
 
-    plt.savefig(filenpath_and_name)
+    plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
 
-def dbscan(data, keyfigure_x, keyfigure_y):
+def dbscan(dataframe, keyfigure_x, keyfigure_y):
     """This method clusters the data via dbscan.
 
     Args:
@@ -539,35 +605,38 @@ def dbscan(data, keyfigure_x, keyfigure_y):
 
     filenpath_and_name = r'C:\FPA2\Figures\DBscan\Plot_' + keyfigure_y + '.svg'
 
+    dataframe, scaler = scale_dataframe(dataframe)
+
     # Declaring Model
     model = DBSCAN()
 
     # Fitting Model
-    model.fit(data)
+    model.fit(dataframe)
 
     # predict the labels of clusters.
-    label = model.fit_predict(data)
+    label = model.fit_predict(dataframe)
 
     # Getting unique labels
     u_labels = np.unique(label)
 
+    dataframe = descale_dataframe(dataframe, scaler)
+
     # plotting the results
     for i in u_labels:
-        plt.scatter(data[label == i, 0],
-                    data[label == i, 1],
+        plt.scatter(dataframe[label == i, 0],
+                    dataframe[label == i, 1],
                     label='Cluster ' + str(i) + ' n='+str(
                         np.count_nonzero(label == i)))
 
     plt.title("DBSCAN "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend()
-
-    plt.savefig(filenpath_and_name)
+    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
 
-def birch(data, number_cluster, keyfigure_x, keyfigure_y):
+def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """This method clusters the data via birch.
 
     Args:
@@ -578,7 +647,10 @@ def birch(data, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\BIRCH\Plot_' + keyfigure_y + '.svg'
+    filenpath_and_name = r'C:\FPA2\Figures\BIRCH\Plot_C' + \
+        str(number_cluster) + "_" + keyfigure_y + '.svg'
+
+    dataframe, scaler = scale_dataframe(dataframe)
 
     # Declaring Model with some parameters
     model = Birch(
@@ -586,18 +658,20 @@ def birch(data, number_cluster, keyfigure_x, keyfigure_y):
     )
 
     # Fitting Model
-    model.fit(data)
+    model.fit(dataframe)
 
     # predict the labels of clusters.
-    label = model.fit_predict(data)
+    label = model.fit_predict(dataframe)
 
     # Getting unique labels
     u_labels = np.unique(label)
 
+    dataframe = descale_dataframe(dataframe, scaler)
+
     # plotting the results
     for i in u_labels:
-        plt.scatter(data[label == i, 0],
-                    data[label == i, 1],
+        plt.scatter(dataframe[label == i, 0],
+                    dataframe[label == i, 1],
                     label='Cluster ' + str(i) + ' n='+str(
                         np.count_nonzero(label == i)))
 
@@ -605,12 +679,12 @@ def birch(data, number_cluster, keyfigure_x, keyfigure_y):
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend()
-    plt.savefig(filenpath_and_name)
+    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
 
-def agglomerative_clustering(data, number_cluster, keyfigure_x, keyfigure_y):
+def agglomerative_clustering(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """This method clusters the data via agglomerative_clustering
 
     Args:
@@ -621,8 +695,11 @@ def agglomerative_clustering(data, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method agglomerative_clustering was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_' + \
+    filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C' + \
+        str(number_cluster) + "_" + \
         keyfigure_y + '.svg'
+
+    dataframe, scaler = scale_dataframe(dataframe)
 
     # Declaring Model with some parameters
     model = AgglomerativeClustering(
@@ -630,18 +707,20 @@ def agglomerative_clustering(data, number_cluster, keyfigure_x, keyfigure_y):
     )
 
     # Fitting Model
-    model.fit(data)
+    model.fit(dataframe)
 
     # predict the labels of clusters.
-    label = model.fit_predict(data)
+    label = model.fit_predict(dataframe)
 
     # Getting unique labels
     u_labels = np.unique(label)
 
+    dataframe = descale_dataframe(dataframe, scaler)
+
     # plotting the results
     for i in u_labels:
-        plt.scatter(data[label == i, 0],
-                    data[label == i, 1],
+        plt.scatter(dataframe[label == i, 0],
+                    dataframe[label == i, 1],
                     label='Cluster ' + str(i) + ' n='+str(
                         np.count_nonzero(label == i)))
 
@@ -649,8 +728,8 @@ def agglomerative_clustering(data, number_cluster, keyfigure_x, keyfigure_y):
               " "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend()
-    plt.savefig(filenpath_and_name)
+    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
 
