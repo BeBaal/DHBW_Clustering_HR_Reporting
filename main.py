@@ -25,10 +25,11 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 
 # Options
+OPTION_DELETE_FORMER_RESULTS = True
 OPTION_USE_STANDARDSCALER = True
 OPTION_DESCALING_KEYFIGURES = True
 OPTION_FILTER_COUNTRIES = False
-# If OPTION_FILTER_COUNTRIES equals true
+# If OPTION_FILTER_COUNTRIES equals true filter to following countries:
 OPTION_COUNTRY_LIST = ["DE",
                        "FR",
                        "US",
@@ -42,6 +43,8 @@ def main():
 
     # get the start time
     start_time = time.time()
+
+    delete_results()
 
     dataframe = load_files()
 
@@ -66,22 +69,32 @@ def main():
             continue
 
         # Remove not necessary features
-        data = setup_data_clustering_algorithm(
-            dataframe,
-            keyfigure_x,
-            keyfigure_y)
+        data = setup_data_clustering_algorithm(dataframe,
+                                               keyfigure_x,
+                                               keyfigure_y)
 
-        clustering(data, 2, keyfigure_x, keyfigure_y)
-        clustering(data, number_of_countries, keyfigure_x, keyfigure_y)
-        #plot_density(data, keyfigure_x, keyfigure_y)
+        clustering(data,
+                   2,
+                   keyfigure_x,
+                   keyfigure_y)
+
+        clustering(data,
+                   number_of_countries,
+                   keyfigure_x,
+                   keyfigure_y)
+
+        plot_density(data,
+                     keyfigure_x,
+                     keyfigure_y)
 
         # Remove not necessary features and scale data
-        data = setup_data_clustering_traditionally(
-            dataframe,
-            keyfigure_x,
-            keyfigure_y)
+        data = setup_data_clustering_traditionally(dataframe,
+                                                   keyfigure_x,
+                                                   keyfigure_y)
 
-        traditional_clustering(data, keyfigure_x, keyfigure_y)
+        traditional_clustering(data,
+                               keyfigure_x,
+                               keyfigure_y)
 
     # get end time
     end_time = time.time()
@@ -135,6 +148,10 @@ def delete_results():
     files from the result folders of the clustering figures. The descriptive
     summary does not get deleted.
     """
+
+    if OPTION_DELETE_FORMER_RESULTS is False:
+        return
+
     paths = [r'C:\FPA2\Figures\BIRCH\\',
              r'C:\FPA2\Figures\DBScan\\',
              r'C:\FPA2\Figures\Gaussian\\',
@@ -148,7 +165,7 @@ def delete_results():
             # construct full file path
             file = path + file_name
             if os.path.isfile(file):
-                print('Deleting file:', file)
+                logging.info('Deleting file:', file)
                 os.remove(file)
 
 
@@ -169,7 +186,7 @@ def filter_countries(dataframe):
 
 
 def plot_density(data, keyfigure_x, keyfigure_y):
-    """This method plots two keyfigures from a dataframe categorically.
+    """This method plots the density of two keyfigures from a dataframe.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
@@ -178,34 +195,15 @@ def plot_density(data, keyfigure_x, keyfigure_y):
     """
     logging.info('plot_2_keyfigures_categorical function was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Traditional_Clusters\Plot_' + \
-        "_" + keyfigure_y + '.svg'
+    filenpath_and_name = r'C:\FPA2\Figures\Density\Plot_' + keyfigure_y + '.svg'
 
-    # set seaborn style
-    sns.set_style("white")
-
-    # Basic 2D density plot
-    sns.kdeplot(data=data, x=keyfigure_x, y=keyfigure_y)
-    plt.show()
-
-    # Custom the color, add shade and bandwidth
-    # sns.kdeplot(x=data[1], y=data[2],
-    #             cmap="Reds", shade=True, bw_adjust=.5)
-    # plt.show()
-
-    # Add thresh parameter
-    # sns.kdeplot(x=data[keyfigure_x], y=data[keyfigure_y],
-    #             cmap="Blues", shade=True, thresh=0)
-    # plt.show()
-
-    # plt.title(category+" "+keyfigure_x + " / " + keyfigure_y)
-    # plt.xlabel(keyfigure_x)
-    # plt.ylabel(keyfigure_y)
-    # # plt.legend(loc=(1.04, 0))
-    # # plt.subplots_adjust(right=0.7)
-    # plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
-    # plt.savefig(filenpath_and_name, bbox_inches="tight")
-    # plt.close()
+    plt.hist2d(data[keyfigure_x], data[keyfigure_y],
+               (10, 10), cmap=plt.cm.jet)
+    plt.colorbar()
+    plt.xlabel(keyfigure_x)
+    plt.ylabel(keyfigure_y)
+    plt.savefig(filenpath_and_name, bbox_inches="tight")
+    plt.close()
 
 
 def traditional_clustering(dataframe, keyfigure_x, keyfigure_y):
@@ -346,8 +344,6 @@ def plot_2_keyfigures_categorical(dataframe, category, keyfigure_x, keyfigure_y)
     plt.title(category+" "+keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    # plt.legend(loc=(1.04, 0))
-    # plt.subplots_adjust(right=0.7)
     plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()

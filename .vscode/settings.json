@@ -1,6 +1,6 @@
 {
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true,
+    "python.linting.enabled": false,
     "python.pythonPath": "baalmannb/.virtualenvs/Scripts-PImFmtea/Scripts/Python",
     "python.defaultInterpreterPath": "baalmannb/.virtualenvs/Scripts-PImFmtea/Scripts/Python",
     "cSpell.words": [
