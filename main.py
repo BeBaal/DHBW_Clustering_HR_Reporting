@@ -25,6 +25,7 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 
 # Options
+OPTION_POWERPOINT_OR_WORD = 'Word'  # Word or Powerpoint
 OPTION_USE_STANDARDSCALER = True
 OPTION_DESCALING_KEYFIGURES = True
 OPTION_FILTER_COUNTRIES = False
@@ -42,6 +43,8 @@ def main():
 
     # get the start time
     start_time = time.time()
+
+    matplotlib_settings()
 
     dataframe = load_files()
 
@@ -73,7 +76,7 @@ def main():
 
         clustering(data, 2, keyfigure_x, keyfigure_y)
         clustering(data, number_of_countries, keyfigure_x, keyfigure_y)
-        #plot_density(data, keyfigure_x, keyfigure_y)
+        # plot_density(data, keyfigure_x, keyfigure_y)
 
         # Remove not necessary features and scale data
         data = setup_data_clustering_traditionally(
@@ -89,6 +92,17 @@ def main():
     # calculate calculation time
     elapsed_time = end_time - start_time
     print('Execution time:', elapsed_time, 'seconds')
+
+
+def matplotlib_settings():
+    """This function sets the matplotlib global export settings either for
+    Powerpoint or Word relating to the option that was set in the class variables.
+    """
+    match OPTION_POWERPOINT_OR_WORD:
+        case 'Word':
+            plt.rcParams["figure.figsize"] = (20, 10)
+        case 'Powerpoint':
+            plt.rcParams["figure.figsize"] = (20, 10)
 
 
 def descale_dataframe(dataframe, scaler):
@@ -338,6 +352,12 @@ def plot_2_keyfigures_categorical(dataframe, category, keyfigure_x, keyfigure_y)
     filenpath_and_name = r'C:\FPA2\Figures\Traditional_Clusters\Plot_' + \
         category + "_" + keyfigure_y + '.svg'
 
+    match category:
+        case "Gesellschaftstyp":
+            columns = 1  # only two entries therefore one columns are sufficient
+        case "Land":
+            columns = 2  # lots of possible entries two columns are needed
+
     sns.scatterplot(data=dataframe,
                     x=keyfigure_x,
                     y=keyfigure_y,
@@ -348,7 +368,7 @@ def plot_2_keyfigures_categorical(dataframe, category, keyfigure_x, keyfigure_y)
     plt.ylabel(keyfigure_y)
     # plt.legend(loc=(1.04, 0))
     # plt.subplots_adjust(right=0.7)
-    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
