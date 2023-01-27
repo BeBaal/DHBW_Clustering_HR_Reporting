@@ -35,10 +35,8 @@ OPTION_COUNTRY_LIST = ["DE",
                        "US",
                        "NL"]
 OPTION_FILTER_KEYFIGURES = False
-OPTION_FILTER_KEYFIGURES_LIST = ["AZV",
-                                 
-    
-]
+OPTION_FILTER_KEYFIGURES_LIST = ["AZV"
+                                 ]
 
 
 def main():
@@ -266,7 +264,7 @@ def get_keyfigures(dataframe):
     keyfigures.remove('Lidl Land Langtext')
     keyfigures.remove('Lidl Gesellschaftstyp')
     keyfigures.remove('Lidl Gesellschaften')
-    
+
     if OPTION_FILTER_KEYFIGURES is True:
         for keyfigure in OPTION_FILTER_KEYFIGURES_LIST:
             keyfigures.remove(keyfigure)
