@@ -34,6 +34,11 @@ OPTION_COUNTRY_LIST = ["DE",
                        "FR",
                        "US",
                        "NL"]
+OPTION_FILTER_KEYFIGURES = False
+OPTION_FILTER_KEYFIGURES_LIST = ["AZV",
+                                 
+    
+]
 
 
 def main():
@@ -261,6 +266,10 @@ def get_keyfigures(dataframe):
     keyfigures.remove('Lidl Land Langtext')
     keyfigures.remove('Lidl Gesellschaftstyp')
     keyfigures.remove('Lidl Gesellschaften')
+    
+    if OPTION_FILTER_KEYFIGURES is True:
+        for keyfigure in OPTION_FILTER_KEYFIGURES_LIST:
+            keyfigures.remove(keyfigure)
 
     return keyfigures
 
@@ -276,7 +285,7 @@ def load_files():
 
     xls = pd.ExcelFile(
         r'C:\FPA2\Daten_Forschungsprojektarbeit_2\Daten_FPA2.xlsx')
-    data_file = pd.read_excel(xls,  'Export', header=1)
+    data_file = pd.read_excel(xls, 'Export', header=1)
 
     # Load dataframes
     dataframe = pd.DataFrame(data_file)
@@ -339,7 +348,11 @@ def setup_data_clustering_traditionally(dataframe, keyfigure_x, keyfigure_y):
     return dataframe
 
 
-def plot_2_keyfigures_categorical(dataframe, category, keyfigure_x, keyfigure_y):
+def plot_2_keyfigures_categorical(
+        dataframe,
+        category,
+        keyfigure_x,
+        keyfigure_y):
     """This method plots two keyfigures from a dataframe categorically.
 
     Args:
@@ -363,7 +376,7 @@ def plot_2_keyfigures_categorical(dataframe, category, keyfigure_x, keyfigure_y)
                     y=keyfigure_y,
                     hue=category)
 
-    plt.title(category+" "+keyfigure_x + " / " + keyfigure_y)
+    plt.title(category + " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     # plt.legend(loc=(1.04, 0))
@@ -556,8 +569,8 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
                 centroids[:, 1],
                 c='black')
 
-    plt.title("KMEANS C_"+str(number_cluster) +
-              " "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("KMEANS C_" + str(number_cluster) +
+              " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
@@ -603,7 +616,7 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
                     label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Gaussian C_"+str(number_cluster)+" " +
+    plt.title("Gaussian C_" + str(number_cluster) + " " +
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
@@ -645,10 +658,10 @@ def dbscan(dataframe, keyfigure_x, keyfigure_y):
     for i in u_labels:
         plt.scatter(dataframe[label == i, 0],
                     dataframe[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(
+                    label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("DBSCAN "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("DBSCAN " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
@@ -692,10 +705,10 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     for i in u_labels:
         plt.scatter(dataframe[label == i, 0],
                     dataframe[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(
+                    label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Birch C_"+str(number_cluster)+" " +
+    plt.title("Birch C_" + str(number_cluster) + " " +
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
@@ -704,7 +717,11 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     plt.close()
 
 
-def agglomerative_clustering(dataframe, number_cluster, keyfigure_x, keyfigure_y):
+def agglomerative_clustering(
+        dataframe,
+        number_cluster,
+        keyfigure_x,
+        keyfigure_y):
     """This method clusters the data via agglomerative_clustering
 
     Args:
@@ -716,8 +733,7 @@ def agglomerative_clustering(dataframe, number_cluster, keyfigure_x, keyfigure_y
     logging.info('clustering method agglomerative_clustering was called')
 
     filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C' + \
-        str(number_cluster) + "_" + \
-        keyfigure_y + '.svg'
+        str(number_cluster) + "_" + keyfigure_y + '.svg'
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -741,11 +757,11 @@ def agglomerative_clustering(dataframe, number_cluster, keyfigure_x, keyfigure_y
     for i in u_labels:
         plt.scatter(dataframe[label == i, 0],
                     dataframe[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(
+                    label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Agglomeratives Clustering C_"+str(number_cluster) +
-              " "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("Agglomeratives Clustering C_" + str(number_cluster) +
+              " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
