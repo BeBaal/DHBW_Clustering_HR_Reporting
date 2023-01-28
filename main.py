@@ -138,11 +138,13 @@ def scale_dataframe(dataframe):
         numpy array: HR KPI dataframe
         standard scaler object: Standard Scaler
     """
+
     if OPTION_USE_STANDARDSCALER is True:
         # Scale the values from 0 to 1
         scaler = StandardScaler(copy=False)
         # transforms Dataframe to numpy array
         data = scaler.fit_transform(dataframe)
+        scaler.set_output(transform="pandas")
 
     return data, scaler
 
