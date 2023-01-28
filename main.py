@@ -1,7 +1,7 @@
-"""This program is used  for an exploratory data analysis of different clustering
-    methods regarding their use for reporting purposes. Data used is aggregated
-    reporting data from Lidl regional departments and mostly on the topic
-    Human Resources. The Analysis is part of my research project
+"""This program is used  for an exploratory data analysis of different
+    clustering methods regarding their use for reporting purposes. Data used is
+    aggregated reporting data from Lidl regional departments and mostly on the
+    topic Human Resources. The Analysis is part of my research project
     "Clusteringverfahren und deren Einsatzmöglichkeiten im Personalreporting:
     Ein Anwendungsbeispiel" at DHBW CAS in Heilbronn for my Master in Business
     Informatics.
@@ -99,7 +99,8 @@ def main():
 
 def matplotlib_settings():
     """This function sets the matplotlib global export settings either for
-    Powerpoint or Word relating to the option that was set in the class variables.
+    Powerpoint or Word relating to the option that was set in the class
+    variables.
     """
     match OPTION_POWERPOINT_OR_WORD:
         case 'Word':
@@ -229,8 +230,8 @@ def plot_density(data, keyfigure_x, keyfigure_y):
 
 def traditional_clustering(dataframe, keyfigure_x, keyfigure_y):
     """This function defines the traditional reporting cluster categories and
-    does the loop logic over the different clusters. Additionally the corresponding
-    plotting function is called here.
+    does the loop logic over the different clusters. Additionally the
+    corresponding plotting function is called here.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
@@ -367,9 +368,9 @@ def plot_2_keyfigures_categorical(
 
     match category:
         case "Gesellschaftstyp":
-            columns = 1  # only two entries therefore one columns are sufficient
+            columns = 1  # only two entries therefore one column
         case "Land":
-            columns = 2  # lots of possible entries two columns are needed
+            columns = 2  # lots of possible entries two columns
 
     sns.scatterplot(data=dataframe,
                     x=keyfigure_x,
@@ -485,7 +486,7 @@ def clustering(data, number_of_clusters, keyfigure_x, keyfigure_y):
     to the different clustering algorithms.
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Second keyfigure
     """
@@ -583,7 +584,7 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """This method clusters the data via k means.
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         number_cluster (integer): Number of clusters for analysis
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Second keyfigure
@@ -630,7 +631,7 @@ def dbscan(dataframe, keyfigure_x, keyfigure_y):
     """This method clusters the data via dbscan.
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         keyfigure_x (string): First keyfigure for analysis
         keyfigure_y (string): Second keyfigure for analysis
     """
@@ -673,7 +674,7 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """This method clusters the data via birch.
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         number_cluster (integer): Number of clusters for analysis
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Second keyfigure
@@ -725,15 +726,15 @@ def agglomerative_clustering(
     """This method clusters the data via agglomerative_clustering
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         number_cluster (integer): Number of clusters for analysis
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Last keyfigure
     """
     logging.info('clustering method agglomerative_clustering was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C' + \
-        str(number_cluster) + "_" + keyfigure_y + '.svg'
+    filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C' \
+        + str(number_cluster) + "_" + keyfigure_y + '.svg'
 
     dataframe, scaler = scale_dataframe(dataframe)
 
