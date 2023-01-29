@@ -89,8 +89,6 @@ def main():
                    keyfigure_x,
                    keyfigure_y)
 
-        clustering(data, 2, keyfigure_x, keyfigure_y)
-        clustering(data, number_of_countries, keyfigure_x, keyfigure_y)
         # plot_density(data, keyfigure_x, keyfigure_y)
 
         # Remove not necessary features and scale data
@@ -215,33 +213,16 @@ def plot_density(data, keyfigure_x, keyfigure_y):
     """
     logging.info('plot_2_keyfigures_categorical function was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Density\Plot_' + keyfigure_y + '.svg'
+    filenpath_and_name = r'C:\FPA2\Figures\Density\Plot_' \
+        + keyfigure_y + '.svg'
 
     # set seaborn style
     sns.set_style("white")
 
     # Basic 2D density plot
     sns.kdeplot(data=data, x=keyfigure_x, y=keyfigure_y)
-    plt.show()
-
-    # Custom the color, add shade and bandwidth
-    # sns.kdeplot(x=data[1], y=data[2],
-    #             cmap="Reds", shade=True, bw_adjust=.5)
-    # plt.show()
-
-    # Add thresh parameter
-    # sns.kdeplot(x=data[keyfigure_x], y=data[keyfigure_y],
-    #             cmap="Blues", shade=True, thresh=0)
-    # plt.show()
-
-    # plt.title(category+" "+keyfigure_x + " / " + keyfigure_y)
-    # plt.xlabel(keyfigure_x)
-    # plt.ylabel(keyfigure_y)
-    # # plt.legend(loc=(1.04, 0))
-    # # plt.subplots_adjust(right=0.7)
-    # plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
-    # plt.savefig(filenpath_and_name, bbox_inches="tight")
-    # plt.close()
+    plt.savefig(filenpath_and_name, bbox_inches="tight")
+    plt.close()
 
 
 def traditional_clustering(dataframe, keyfigure_x, keyfigure_y):
@@ -385,8 +366,10 @@ def plot_2_keyfigures_categorical(
     match category:
         case "Gesellschaftstyp":
             columns = 1  # only two entries therefore one column
-        case "Land":
+        case "Lidl Land":
             columns = 2  # lots of possible entries two columns
+        case _:
+            columns = 1  # fallback solution
 
     sns.scatterplot(data=dataframe,
                     x=keyfigure_x,
@@ -554,9 +537,9 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
         str(number_cluster) + "_" + keyfigure_y + '.svg'
 
     if number_cluster == 2:
-        column = 1
+        columns = 1
     else:
-        column = 2
+        columns = 2
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -595,7 +578,7 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
               " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=column, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
 
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
@@ -616,9 +599,9 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
         str(number_cluster) + "_" + keyfigure_y + '.svg'
 
     if number_cluster == 2:
-        column = 1
+        columns = 1
     else:
-        column = 2
+        columns = 2
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -647,7 +630,7 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=column, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
 
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
@@ -663,7 +646,8 @@ def dbscan(dataframe, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method dbscan was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\DBscan\Plot_' + keyfigure_y + '.svg'
+    filenpath_and_name = r'C:\FPA2\Figures\DBscan\Plot_' \
+        + keyfigure_y + '.svg'
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -711,9 +695,9 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
         str(number_cluster) + "_" + keyfigure_y + '.svg'
 
     if number_cluster == 2:
-        column = 1
+        columns = 1
     else:
-        column = 2
+        columns = 2
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -744,7 +728,7 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=column, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
@@ -768,9 +752,9 @@ def agglomerative_clustering(
         + str(number_cluster) + "_" + keyfigure_y + '.svg'
 
     if number_cluster == 2:
-        column = 1
+        columns = 1
     else:
-        column = 2
+        columns = 2
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -801,7 +785,7 @@ def agglomerative_clustering(
               " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=column, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
