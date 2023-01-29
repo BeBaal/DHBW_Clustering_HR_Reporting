@@ -684,7 +684,7 @@ def agglomerative_clustering(dataframe, number_cluster, keyfigure_x, keyfigure_y
     """This method clusters the data via agglomerative_clustering
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        dataframe (numpy array): Two dimensional array of HR keyfigures for regional departments
         number_cluster (integer): Number of clusters for analysis
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Last keyfigure
