@@ -1,7 +1,7 @@
-"""This program is used  for an exploratory data analysis of different clustering
-    methods regarding their use for reporting purposes. Data used is aggregated
-    reporting data from Lidl regional departments and mostly on the topic
-    Human Resources. The Analysis is part of my research project
+"""This program is used  for an exploratory data analysis of different
+    clustering methods regarding their use for reporting purposes. Data used is
+    aggregated reporting data from Lidl regional departments and mostly on the
+    topic Human Resources. The Analysis is part of my research project
     "Clusteringverfahren und deren Einsatzmöglichkeiten im Personalreporting:
     Ein Anwendungsbeispiel" at DHBW CAS in Heilbronn for my Master in Business
     Informatics.
@@ -25,6 +25,7 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 
 # Options
+OPTION_POWERPOINT_OR_WORD = 'Word'  # Word or Powerpoint
 OPTION_DELETE_FORMER_RESULTS = True
 OPTION_USE_STANDARDSCALER = True
 OPTION_DESCALING_KEYFIGURES = True
@@ -34,6 +35,9 @@ OPTION_COUNTRY_LIST = ["DE",
                        "FR",
                        "US",
                        "NL"]
+OPTION_FILTER_KEYFIGURES = False
+OPTION_FILTER_KEYFIGURES_LIST = ["AZV"
+                                 ]
 
 
 def main():
@@ -45,6 +49,8 @@ def main():
     start_time = time.time()
 
     delete_results()
+
+    matplotlib_settings()
 
     dataframe = load_files()
 
@@ -83,9 +89,9 @@ def main():
                    keyfigure_x,
                    keyfigure_y)
 
-        plot_density(data,
-                     keyfigure_x,
-                     keyfigure_y)
+        clustering(data, 2, keyfigure_x, keyfigure_y)
+        clustering(data, number_of_countries, keyfigure_x, keyfigure_y)
+        # plot_density(data, keyfigure_x, keyfigure_y)
 
         # Remove not necessary features and scale data
         data = setup_data_clustering_traditionally(dataframe,
@@ -102,6 +108,18 @@ def main():
     # calculate calculation time
     elapsed_time = end_time - start_time
     print('Execution time:', elapsed_time, 'seconds')
+
+
+def matplotlib_settings():
+    """This function sets the matplotlib global export settings either for
+    Powerpoint or Word relating to the option that was set in the class
+    variables.
+    """
+    match OPTION_POWERPOINT_OR_WORD:
+        case 'Word':
+            plt.rcParams["figure.figsize"] = (20, 10)
+        case 'Powerpoint':
+            plt.rcParams["figure.figsize"] = (20, 10)
 
 
 def descale_dataframe(dataframe, scaler):
@@ -134,11 +152,13 @@ def scale_dataframe(dataframe):
         numpy array: HR KPI dataframe
         standard scaler object: Standard Scaler
     """
+
     if OPTION_USE_STANDARDSCALER is True:
         # Scale the values from 0 to 1
         scaler = StandardScaler(copy=False)
         # transforms Dataframe to numpy array
         data = scaler.fit_transform(dataframe)
+        scaler.set_output(transform="pandas")
 
     return data, scaler
 
@@ -197,19 +217,37 @@ def plot_density(data, keyfigure_x, keyfigure_y):
 
     filenpath_and_name = r'C:\FPA2\Figures\Density\Plot_' + keyfigure_y + '.svg'
 
-    plt.hist2d(data[keyfigure_x], data[keyfigure_y],
-               (10, 10), cmap=plt.cm.jet)
-    plt.colorbar()
-    plt.xlabel(keyfigure_x)
-    plt.ylabel(keyfigure_y)
-    plt.savefig(filenpath_and_name, bbox_inches="tight")
-    plt.close()
+    # set seaborn style
+    sns.set_style("white")
+
+    # Basic 2D density plot
+    sns.kdeplot(data=data, x=keyfigure_x, y=keyfigure_y)
+    plt.show()
+
+    # Custom the color, add shade and bandwidth
+    # sns.kdeplot(x=data[1], y=data[2],
+    #             cmap="Reds", shade=True, bw_adjust=.5)
+    # plt.show()
+
+    # Add thresh parameter
+    # sns.kdeplot(x=data[keyfigure_x], y=data[keyfigure_y],
+    #             cmap="Blues", shade=True, thresh=0)
+    # plt.show()
+
+    # plt.title(category+" "+keyfigure_x + " / " + keyfigure_y)
+    # plt.xlabel(keyfigure_x)
+    # plt.ylabel(keyfigure_y)
+    # # plt.legend(loc=(1.04, 0))
+    # # plt.subplots_adjust(right=0.7)
+    # plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    # plt.savefig(filenpath_and_name, bbox_inches="tight")
+    # plt.close()
 
 
 def traditional_clustering(dataframe, keyfigure_x, keyfigure_y):
     """This function defines the traditional reporting cluster categories and
-    does the loop logic over the different clusters. Additionally the corresponding
-    plotting function is called here.
+    does the loop logic over the different clusters. Additionally the
+    corresponding plotting function is called here.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
@@ -246,6 +284,10 @@ def get_keyfigures(dataframe):
     keyfigures.remove('Lidl Gesellschaftstyp')
     keyfigures.remove('Lidl Gesellschaften')
 
+    if OPTION_FILTER_KEYFIGURES is True:
+        for keyfigure in OPTION_FILTER_KEYFIGURES_LIST:
+            keyfigures.remove(keyfigure)
+
     return keyfigures
 
 
@@ -260,7 +302,7 @@ def load_files():
 
     xls = pd.ExcelFile(
         r'C:\FPA2\Daten_Forschungsprojektarbeit_2\Daten_FPA2.xlsx')
-    data_file = pd.read_excel(xls,  'Export', header=1)
+    data_file = pd.read_excel(xls, 'Export', header=1)
 
     # Load dataframes
     dataframe = pd.DataFrame(data_file)
@@ -323,7 +365,11 @@ def setup_data_clustering_traditionally(dataframe, keyfigure_x, keyfigure_y):
     return dataframe
 
 
-def plot_2_keyfigures_categorical(dataframe, category, keyfigure_x, keyfigure_y):
+def plot_2_keyfigures_categorical(
+        dataframe,
+        category,
+        keyfigure_x,
+        keyfigure_y):
     """This method plots two keyfigures from a dataframe categorically.
 
     Args:
@@ -336,15 +382,23 @@ def plot_2_keyfigures_categorical(dataframe, category, keyfigure_x, keyfigure_y)
     filenpath_and_name = r'C:\FPA2\Figures\Traditional_Clusters\Plot_' + \
         category + "_" + keyfigure_y + '.svg'
 
+    match category:
+        case "Gesellschaftstyp":
+            columns = 1  # only two entries therefore one column
+        case "Land":
+            columns = 2  # lots of possible entries two columns
+
     sns.scatterplot(data=dataframe,
                     x=keyfigure_x,
                     y=keyfigure_y,
                     hue=category)
 
-    plt.title(category+" "+keyfigure_x + " / " + keyfigure_y)
+    plt.title(category + " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    # plt.legend(loc=(1.04, 0))
+    # plt.subplots_adjust(right=0.7)
+    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
@@ -448,7 +502,7 @@ def clustering(data, number_of_clusters, keyfigure_x, keyfigure_y):
     to the different clustering algorithms.
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Second keyfigure
     """
@@ -499,6 +553,11 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     filenpath_and_name = r'C:\FPA2\Figures\KMeans\Plot_C' + \
         str(number_cluster) + "_" + keyfigure_y + '.svg'
 
+    if number_cluster == 2:
+        column = 1
+    else:
+        column = 2
+
     dataframe, scaler = scale_dataframe(dataframe)
 
     # Declaring Model with some parameters
@@ -532,11 +591,11 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
                 centroids[:, 1],
                 c='black')
 
-    plt.title("KMEANS C_"+str(number_cluster) +
-              " "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("KMEANS C_" + str(number_cluster) +
+              " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=column, bbox_to_anchor=(1.04, 1), loc="upper left")
 
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
@@ -546,7 +605,7 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """This method clusters the data via k means.
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         number_cluster (integer): Number of clusters for analysis
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Second keyfigure
@@ -555,6 +614,11 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
 
     filenpath_and_name = r'C:\FPA2\Figures\Gaussian\Plot_C' + \
         str(number_cluster) + "_" + keyfigure_y + '.svg'
+
+    if number_cluster == 2:
+        column = 1
+    else:
+        column = 2
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -579,11 +643,11 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
                     label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Gaussian C_"+str(number_cluster)+" " +
+    plt.title("Gaussian C_" + str(number_cluster) + " " +
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=column, bbox_to_anchor=(1.04, 1), loc="upper left")
 
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
@@ -593,7 +657,7 @@ def dbscan(dataframe, keyfigure_x, keyfigure_y):
     """This method clusters the data via dbscan.
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         keyfigure_x (string): First keyfigure for analysis
         keyfigure_y (string): Second keyfigure for analysis
     """
@@ -621,13 +685,13 @@ def dbscan(dataframe, keyfigure_x, keyfigure_y):
     for i in u_labels:
         plt.scatter(dataframe[label == i, 0],
                     dataframe[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(
+                    label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("DBSCAN "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("DBSCAN " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=1, bbox_to_anchor=(1.04, 1), loc="upper left")
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
@@ -636,7 +700,7 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """This method clusters the data via birch.
 
     Args:
-        data (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         number_cluster (integer): Number of clusters for analysis
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Second keyfigure
@@ -645,6 +709,11 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
 
     filenpath_and_name = r'C:\FPA2\Figures\BIRCH\Plot_C' + \
         str(number_cluster) + "_" + keyfigure_y + '.svg'
+
+    if number_cluster == 2:
+        column = 1
+    else:
+        column = 2
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -668,32 +737,40 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     for i in u_labels:
         plt.scatter(dataframe[label == i, 0],
                     dataframe[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(
+                    label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Birch C_"+str(number_cluster)+" " +
+    plt.title("Birch C_" + str(number_cluster) + " " +
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=column, bbox_to_anchor=(1.04, 1), loc="upper left")
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
 
-def agglomerative_clustering(dataframe, number_cluster, keyfigure_x, keyfigure_y):
+def agglomerative_clustering(
+        dataframe,
+        number_cluster,
+        keyfigure_x,
+        keyfigure_y):
     """This method clusters the data via agglomerative_clustering
 
     Args:
-        dataframe (numpy array): Two dimensional array of HR keyfigures for regional departments
+        data (numpy array): Bivariate HR keyfigures for regional departments
         number_cluster (integer): Number of clusters for analysis
         keyfigure_x (string): First keyfigure
         keyfigure_y (string): Last keyfigure
     """
     logging.info('clustering method agglomerative_clustering was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C' + \
-        str(number_cluster) + "_" + \
-        keyfigure_y + '.svg'
+    filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C' \
+        + str(number_cluster) + "_" + keyfigure_y + '.svg'
+
+    if number_cluster == 2:
+        column = 1
+    else:
+        column = 2
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -717,14 +794,14 @@ def agglomerative_clustering(dataframe, number_cluster, keyfigure_x, keyfigure_y
     for i in u_labels:
         plt.scatter(dataframe[label == i, 0],
                     dataframe[label == i, 1],
-                    label='Cluster ' + str(i) + ' n='+str(
+                    label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Agglomeratives Clustering C_"+str(number_cluster) +
-              " "+keyfigure_x + " / " + keyfigure_y)
+    plt.title("Agglomeratives Clustering C_" + str(number_cluster) +
+              " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=2, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=column, bbox_to_anchor=(1.04, 1), loc="upper left")
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
