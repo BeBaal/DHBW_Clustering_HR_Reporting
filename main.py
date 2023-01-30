@@ -35,8 +35,18 @@ OPTION_COUNTRY_LIST = ["DE",
                        "FR",
                        "US",
                        "NL"]
-OPTION_FILTER_KEYFIGURES = False
-OPTION_FILTER_KEYFIGURES_LIST = ["AZV"
+OPTION_FILTER_KEYFIGURES = True
+OPTION_FILTER_KEYFIGURES_LIST = ["Eintritte",
+                                 "Austritte",
+                                 "Eintritte Frühfluktuation",
+                                 "Austritte Frühfluktuation",
+                                 "maximale AZV",
+                                 "MA mit Zeiterfassung",
+                                 "Vetragsstunden",
+                                 "Bruttostunden",
+                                 "Krankenstand bezahlt",
+                                 "Krankstunden tats.",
+                                 "Resturlaub"
                                  ]
 
 
@@ -116,8 +126,14 @@ def matplotlib_settings():
     match OPTION_POWERPOINT_OR_WORD:
         case 'Word':
             plt.rcParams["figure.figsize"] = (20, 10)
+            plt.rcParams["text.usetex"] = True
+            plt.rcParams["font.family"] = "serif"
+            plt.rcParams["font.size"] = "10"
         case 'Powerpoint':
             plt.rcParams["figure.figsize"] = (20, 10)
+            plt.rcParams["text.usetex"] = True
+            plt.rcParams["font.family"] = "serif"
+            plt.rcParams["font.size"] = "10"
 
 
 def descale_dataframe(dataframe, scaler):
@@ -417,8 +433,6 @@ def plot_correlation(dataframe):
     # Triangle cross correlation
     filenpath_and_name = r'C:\FPA2\Figures\Attribute_Cross_Correlation.svg'
 
-    plt.figure(figsize=(16, 10))
-
     mask = np.triu(np.ones_like(dataframe.corr(
         numeric_only=True),
         dtype=np.bool_))
@@ -431,7 +445,7 @@ def plot_correlation(dataframe):
                           cmap='BrBG')
 
     heatmap.set_title('Correlation Heatmap',
-                      fontdict={'fontsize': 12},
+                      fontdict={'fontsize': 10},
                       pad=12)
 
     plt.tight_layout()
@@ -445,8 +459,6 @@ def plot_correlation(dataframe):
         by='Fluktuation',
         ascending=False)
 
-    plt.figure(figsize=(9, 12))
-
     heatmap = sns.heatmap(dataframe.corr(numeric_only=True)[
         ['Fluktuation']].sort_values(
         by='Fluktuation',
@@ -457,7 +469,7 @@ def plot_correlation(dataframe):
         cmap='BrBG')
 
     heatmap.set_title('Features Correlating with Fluctuation',
-                      fontdict={'fontsize': 18},
+                      fontdict={'fontsize': 10},
                       pad=16)
 
     plt.tight_layout()
