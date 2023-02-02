@@ -69,6 +69,7 @@ def main():
 
     number_of_countries = len(dataframe["Lidl Land"].unique())
 
+    # Generate information about the dataset
     plot_distribution(dataframe)
     plot_correlation(dataframe)
     save_statistical_summary(dataframe)
@@ -79,6 +80,7 @@ def main():
     # Get a list of keyfigures to set keyfigure_y to
     keyfigures = get_keyfigures(dataframe)
 
+    # Loop over y keyfigures
     for keyfigure_y in keyfigures:
         # comparison with itself is not necessary
         if keyfigure_y == keyfigure_x:
@@ -236,8 +238,13 @@ def plot_density(data, keyfigure_x, keyfigure_y):
     sns.set_style("white")
 
     # Basic 2D density plot
-    sns.kdeplot(data=data, x=keyfigure_x, y=keyfigure_y)
-    plt.savefig(filenpath_and_name, bbox_inches="tight")
+    sns.kdeplot(data=data,
+                x=keyfigure_x,
+                y=keyfigure_y)
+
+    plt.savefig(filenpath_and_name,
+                bbox_inches="tight")
+
     plt.close()
 
 
@@ -357,7 +364,9 @@ def setup_data_clustering_traditionally(dataframe, keyfigure_x, keyfigure_y):
 
     # data cleansing
     # No NaN Values
-    dataframe.dropna(axis=0, how="any", inplace=True)
+    dataframe.dropna(axis=0,
+                     how="any",
+                     inplace=True)
 
     return dataframe
 
@@ -395,8 +404,6 @@ def plot_2_keyfigures_categorical(
     plt.title(category + " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    # plt.legend(loc=(1.04, 0))
-    # plt.subplots_adjust(right=0.7)
     plt.legend(ncol=figure_legend_columns,
                bbox_to_anchor=(1.04, 1),
                loc="upper left")
