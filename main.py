@@ -160,7 +160,7 @@ def scale_dataframe(dataframe):
     standard deviation is saved for future descaling.
 
     Args:
-        dataframe (pandas dataframe): _description_
+        dataframe (pandas dataframe): HR KPI dataframe
 
     Returns:
         numpy array: HR KPI dataframe
@@ -381,11 +381,11 @@ def plot_2_keyfigures_categorical(
 
     match category:
         case "Gesellschaftstyp":
-            columns = 1  # only two entries therefore one column
+            figure_legend_columns = 1  # only two entries therefore one column
         case "Lidl Land":
-            columns = 2  # lots of possible entries two columns
+            figure_legend_columns = 2  # lots of possible entries two columns
         case _:
-            columns = 1  # fallback solution
+            figure_legend_columns = 1  # fallback solution
 
     sns.scatterplot(data=dataframe,
                     x=keyfigure_x,
@@ -397,8 +397,11 @@ def plot_2_keyfigures_categorical(
     plt.ylabel(keyfigure_y)
     # plt.legend(loc=(1.04, 0))
     # plt.subplots_adjust(right=0.7)
-    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
-    plt.savefig(filenpath_and_name, bbox_inches="tight")
+    plt.legend(ncol=figure_legend_columns,
+               bbox_to_anchor=(1.04, 1),
+               loc="upper left")
+    plt.savefig(filenpath_and_name,
+                bbox_inches="tight")
     plt.close()
 
 
@@ -548,10 +551,10 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     filenpath_and_name = r'C:\FPA2\Figures\KMeans\Plot_C' + \
         str(number_cluster) + "_" + keyfigure_y + '.svg'
 
-    if number_cluster == 2:
-        columns = 1
+    if number_cluster <= 2:
+        figure_legend_columns = 1  # only two entries therefore one columns
     else:
-        columns = 2
+        figure_legend_columns = 2  # lots of entries therefore two columns
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -590,9 +593,12 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
               " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=figure_legend_columns,
+               bbox_to_anchor=(1.04, 1),
+               loc="upper left")
 
-    plt.savefig(filenpath_and_name, bbox_inches="tight")
+    plt.savefig(filenpath_and_name,
+                bbox_inches="tight")
     plt.close()
 
 
@@ -610,10 +616,10 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     filenpath_and_name = r'C:\FPA2\Figures\Gaussian\Plot_C' + \
         str(number_cluster) + "_" + keyfigure_y + '.svg'
 
-    if number_cluster == 2:
-        columns = 1
+    if number_cluster <= 2:
+        figure_legend_columns = 1  # only two entries therefore one columns
     else:
-        columns = 2
+        figure_legend_columns = 2  # lots of entries therefore two columns
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -642,7 +648,8 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=figure_legend_columns,
+               bbox_to_anchor=(1.04, 1), loc="upper left")
 
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
@@ -706,10 +713,10 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     filenpath_and_name = r'C:\FPA2\Figures\BIRCH\Plot_C' + \
         str(number_cluster) + "_" + keyfigure_y + '.svg'
 
-    if number_cluster == 2:
-        columns = 1
+    if number_cluster <= 2:
+        figure_legend_columns = 1  # only two entries therefore one columns
     else:
-        columns = 2
+        figure_legend_columns = 2  # lots of entries therefore two columns
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -740,7 +747,8 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
               keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.legend(ncol=figure_legend_columns,
+               bbox_to_anchor=(1.04, 1), loc="upper left")
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
@@ -763,10 +771,10 @@ def agglomerative_clustering(
     filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C' \
         + str(number_cluster) + "_" + keyfigure_y + '.svg'
 
-    if number_cluster == 2:
-        columns = 1
+    if number_cluster <= 2:
+        figure_legend_columns = 1  # only two entries therefore one columns
     else:
-        columns = 2
+        figure_legend_columns = 2  # lots of entries therefore two columns
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -797,8 +805,11 @@ def agglomerative_clustering(
               " " + keyfigure_x + " / " + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
-    plt.legend(ncol=columns, bbox_to_anchor=(1.04, 1), loc="upper left")
-    plt.savefig(filenpath_and_name, bbox_inches="tight")
+    plt.legend(ncol=figure_legend_columns,
+               bbox_to_anchor=(1.04, 1),
+               loc="upper left")
+    plt.savefig(filenpath_and_name,
+                bbox_inches="tight")
     plt.close()
 
 
