@@ -35,17 +35,20 @@ OPTION_COUNTRY_LIST = ["DE",
                        "FR",
                        "US",
                        "NL"]
-OPTION_FILTER_KEYFIGURES = True
+OPTION_FILTER_KEYFIGURES = False
 OPTION_FILTER_KEYFIGURES_LIST = ["Eintritte",
                                  "Austritte",
                                  "Eintritte Frühfluktuation",
+                                 "Eintritte Frühfluktuation pro MA",
                                  "Austritte Frühfluktuation",
                                  "maximale AZV",
+                                 "tats. AZV",
                                  "MA mit Zeiterfassung",
                                  "Vetragsstunden",
                                  "Bruttostunden",
-                                 "Krankenstand bezahlt",
+                                 "Krankstunden bez.",
                                  "Krankstunden tats.",
+                                 "Krankstunden pro MA",
                                  "Resturlaub"
                                  ]
 
@@ -66,6 +69,9 @@ def main():
 
     if OPTION_FILTER_COUNTRIES is True:
         dataframe = filter_countries(dataframe)
+
+    if OPTION_FILTER_KEYFIGURES is True:
+        dataframe = filter_keyfigures(dataframe)
 
     number_of_countries = len(dataframe["Lidl Land"].unique())
 
@@ -99,9 +105,11 @@ def main():
                    keyfigure_x,
                    keyfigure_y)
 
-        # plot_density(data, keyfigure_x, keyfigure_y)
+        plot_density(data,
+                     keyfigure_x,
+                     keyfigure_y)
 
-        # Remove not necessary features and scale data
+        # Remove not necessary features
         data = setup_data_clustering_traditionally(dataframe,
                                                    keyfigure_x,
                                                    keyfigure_y)
@@ -123,17 +131,14 @@ def matplotlib_settings():
     Powerpoint or Word relating to the option that was set in the class
     variables.
     """
+    plt.rcParams["font.family"] = "serif"
+    plt.rcParams["font.size"] = "10"
+
     match OPTION_POWERPOINT_OR_WORD:
         case 'Word':
             plt.rcParams["figure.figsize"] = (20, 10)
-            plt.rcParams["text.usetex"] = True
-            plt.rcParams["font.family"] = "serif"
-            plt.rcParams["font.size"] = "10"
         case 'Powerpoint':
             plt.rcParams["figure.figsize"] = (20, 10)
-            plt.rcParams["text.usetex"] = True
-            plt.rcParams["font.family"] = "serif"
-            plt.rcParams["font.size"] = "10"
 
 
 def descale_dataframe(dataframe, scaler):
@@ -191,7 +196,8 @@ def delete_results():
              r'C:\FPA2\Figures\Gaussian\\',
              r'C:\FPA2\Figures\KMeans\\',
              r'C:\FPA2\Figures\Traditional_Clusters\\',
-             r'C:\FPA2\Figures\Agglomeratives_Clustering\\']
+             r'C:\FPA2\Figures\Agglomeratives_Clustering\\',
+             r'C:\FPA2\Figures\Density\\']
 
     for path in paths:
         for file_name in os.listdir(path):
@@ -261,6 +267,19 @@ def traditional_clustering(dataframe, keyfigure_x, keyfigure_y):
             keyfigure_y)
 
 
+def filter_keyfigures(dataframe):
+    """_summary_
+
+    Args:
+        dataframe (_type_): _description_
+    """
+    if OPTION_FILTER_KEYFIGURES is True:
+        for keyfigure in OPTION_FILTER_KEYFIGURES_LIST:
+            dataframe = dataframe.drop(columns=keyfigure)
+
+    return dataframe
+
+
 def get_keyfigures(dataframe):
     """This functions checks the dataframe for relevant keyfigures and gives
     them back as a list. Also removes unnecessary features.
@@ -280,10 +299,6 @@ def get_keyfigures(dataframe):
     keyfigures.remove('Lidl Land Langtext')
     keyfigures.remove('Lidl Gesellschaftstyp')
     keyfigures.remove('Lidl Gesellschaften')
-
-    if OPTION_FILTER_KEYFIGURES is True:
-        for keyfigure in OPTION_FILTER_KEYFIGURES_LIST:
-            keyfigures.remove(keyfigure)
 
     return keyfigures
 
@@ -328,7 +343,8 @@ def setup_data_clustering_algorithm(dataframe, keyfigure_x, keyfigure_y):
         keyfigure_y]]
 
     # data cleansing
-    # KMeans can not handle NaN Values
+    # KMeans can not handle NaN Values and zero values are not relevant
+    dataframe.replace(0, np.nan, inplace=True)
     dataframe.dropna(axis=0, how="any", inplace=True)
 
     return dataframe
@@ -356,7 +372,8 @@ def setup_data_clustering_traditionally(dataframe, keyfigure_x, keyfigure_y):
                                keyfigure_y]]
 
     # data cleansing
-    # No NaN Values
+    # No NaN and zero values
+    dataframe.replace(0, np.nan, inplace=True)
     dataframe.dropna(axis=0, how="any", inplace=True)
 
     return dataframe
@@ -413,7 +430,7 @@ def plot_distribution(dataframe):
     filenpath_and_name = r'C:\FPA2\Figures\Attribute_Distribution.svg'
 
     dataframe.hist(bins=10,
-                   figsize=(20, 20),
+                   figsize=(40, 20),
                    color='b',
                    alpha=0.6)
     plt.savefig(filenpath_and_name, bbox_inches="tight")
@@ -430,7 +447,7 @@ def plot_correlation(dataframe):
     """
     logging.info('plot_cross_correlation function was called')
 
-    # Triangle cross correlation
+    # Triangle cross correlation matrix
     filenpath_and_name = r'C:\FPA2\Figures\Attribute_Cross_Correlation.svg'
 
     mask = np.triu(np.ones_like(dataframe.corr(
@@ -444,9 +461,7 @@ def plot_correlation(dataframe):
                           annot=True,
                           cmap='BrBG')
 
-    heatmap.set_title('Correlation Heatmap',
-                      fontdict={'fontsize': 10},
-                      pad=12)
+    heatmap.set_title('Correlation Heatmap')
 
     plt.tight_layout()
     plt.savefig(filenpath_and_name)
