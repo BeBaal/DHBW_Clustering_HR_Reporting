@@ -1,10 +1,10 @@
-"""This program is used  for an exploratory data analysis of different
-    clustering methods regarding their use for reporting purposes. Data used is
-    aggregated reporting data from Lidl regional departments and mostly on the
-    topic Human Resources. The Analysis is part of my research project
-    "Clusteringverfahren und deren Einsatzmöglichkeiten im Personalreporting:
-    Ein Anwendungsbeispiel" at DHBW CAS in Heilbronn for my Master in Business
-    Informatics.
+"""This program is used  for an exploratory data analysis of
+    different clustering methods regarding their use for reporting
+    purposes. Data used is aggregated reporting data from Lidl regional
+    departments and mostly on the topic Human Resources. The Analysis
+    is part of my research project "Clusteringverfahren und deren
+    Einsatzmöglichkeiten im Personalreporting: Ein Anwendungsbeispiel"
+    at DHBW CAS in Heilbronn for my Master in Business Informatics.
 
     License: MIT
     Author: Bernd Baalmann
@@ -139,8 +139,8 @@ def matplotlib_settings():
 
 
 def descale_dataframe(dataframe, scaler):
-    """This function descales the data with the mean and standard deviation of
-    the former used standard scaler object.
+    """This function descales the data with the mean and standard
+    deviation of the former used standard scaler object.
 
     Args:
         dataframe (numpy array): HR KPI dataframe
@@ -157,9 +157,9 @@ def descale_dataframe(dataframe, scaler):
 
 
 def scale_dataframe(dataframe):
-    """This function scales the data with the standard scaler. Sets mean to 0
-    and the standard deviation to 1. In the scaler object the former mean and
-    standard deviation is saved for future descaling.
+    """This function scales the data with the standard scaler. Sets
+    mean to 0 and the standard deviation to 1. In the scaler object the
+    former mean and standard deviation is saved for future descaling.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
@@ -206,8 +206,8 @@ def delete_results():
 
 
 def filter_countries(dataframe):
-    """This function takes the class variable OPTION_COUNTRIES and filters the
-    dataframe correspondingly.
+    """This function takes the class variable OPTION_COUNTRIES and
+    filters the dataframe correspondingly.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
@@ -231,8 +231,9 @@ def plot_density(data, keyfigure_x, keyfigure_y):
     """
     logging.info('plot_2_keyfigures_categorical function was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Density\Plot_' \
-        + keyfigure_y + '.svg'
+    filenpath_and_name = [r'C:\FPA2\Figures\Density\Plot_'
+                          + keyfigure_y
+                          + '.svg']
 
     # set seaborn style
     sns.set_style("white")
@@ -249,9 +250,9 @@ def plot_density(data, keyfigure_x, keyfigure_y):
 
 
 def traditional_clustering(dataframe, keyfigure_x, keyfigure_y):
-    """This function defines the traditional reporting cluster categories and
-    does the loop logic over the different clusters. Additionally the
-    corresponding plotting function is called here.
+    """This function defines the traditional reporting cluster
+    categories and does the loop logic over the different clusters.
+    Additionally the corresponding plotting function is called here.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
@@ -269,8 +270,8 @@ def traditional_clustering(dataframe, keyfigure_x, keyfigure_y):
 
 
 def get_keyfigures(dataframe):
-    """This functions checks the dataframe for relevant keyfigures and gives
-    them back as a list. Also removes unnecessary features.
+    """This functions checks the dataframe for relevant keyfigures and
+    gives them back as a list. Also removes unnecessary features.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
@@ -315,9 +316,9 @@ def load_files():
 
 
 def setup_data_clustering_algorithm(dataframe, keyfigure_x, keyfigure_y):
-    """This method removes unnecessary parts from the dataframe, deletes Null
-    Values, establishes a standard scaling and sets the result up as a numpy
-    array.
+    """This method removes unnecessary parts from the dataframe, deletes
+    Null Values, establishes a standard scaling and sets the result up
+    as a numpy array.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
@@ -342,8 +343,8 @@ def setup_data_clustering_algorithm(dataframe, keyfigure_x, keyfigure_y):
 
 
 def setup_data_clustering_traditionally(dataframe, keyfigure_x, keyfigure_y):
-    """This method removes unnecessary parts from the dataframe and deletes
-    Null Values.
+    """This method removes unnecessary parts from the dataframe and
+    deletes Null Values.
 
     Args:
         dataframe (pandas dataframe): HR KPI dataframe
@@ -385,8 +386,11 @@ def plot_2_keyfigures_categorical(
     """
     logging.info('plot_2_keyfigures_categorical function was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Traditional_Clusters\Plot_' + \
-        category + "_" + keyfigure_y + '.svg'
+    filenpath_and_name = [r'C:\FPA2\Figures\Traditional_Clusters\Plot_'
+                          + category
+                          + "_"
+                          + keyfigure_y
+                          + '.svg']
 
     match category:
         case "Gesellschaftstyp":
@@ -488,8 +492,8 @@ def plot_correlation(dataframe):
 
 
 def save_statistical_summary(dataframe):
-    """This method saves a descriptive statistical summary for a overview of
-    the dataset.
+    """This method saves a descriptive statistical summary for a
+    overview of the dataset.
 
     Args:
         dataframe (pandas dataframe):  HR KPI dataframe
@@ -503,8 +507,8 @@ def save_statistical_summary(dataframe):
 
 
 def clustering(data, number_of_clusters, keyfigure_x, keyfigure_y):
-    """This method calls the clustering methods and is acting as an interface
-    to the different clustering algorithms.
+    """This method calls the clustering methods and is acting as an
+    interface to the different clustering algorithms.
 
     Args:
         data (numpy array): Bivariate HR keyfigures for regional departments
@@ -555,8 +559,11 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\KMeans\Plot_C' + \
-        str(number_cluster) + "_" + keyfigure_y + '.svg'
+    filenpath_and_name = [r'C:\FPA2\Figures\KMeans\Plot_C'
+                          + str(number_cluster)
+                          + "_"
+                          + keyfigure_y
+                          + '.svg']
 
     if number_cluster <= 2:
         figure_legend_columns = 1  # only two entries therefore one columns
@@ -620,8 +627,11 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Gaussian\Plot_C' + \
-        str(number_cluster) + "_" + keyfigure_y + '.svg'
+    filenpath_and_name = [r'C:\FPA2\Figures\Gaussian\Plot_C'
+                          + str(number_cluster)
+                          + "_"
+                          + keyfigure_y
+                          + '.svg']
 
     if number_cluster <= 2:
         figure_legend_columns = 1  # only two entries therefore one columns
@@ -672,8 +682,9 @@ def dbscan(dataframe, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method dbscan was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\DBscan\Plot_' \
-        + keyfigure_y + '.svg'
+    filenpath_and_name = [r'C:\FPA2\Figures\DBscan\Plot_'
+                          + keyfigure_y
+                          + '.svg']
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -717,8 +728,11 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\BIRCH\Plot_C' + \
-        str(number_cluster) + "_" + keyfigure_y + '.svg'
+    filenpath_and_name = [r'C:\FPA2\Figures\BIRCH\Plot_C'
+                          + str(number_cluster)
+                          + "_"
+                          + keyfigure_y
+                          + '.svg']
 
     if number_cluster <= 2:
         figure_legend_columns = 1  # only two entries therefore one columns
@@ -775,8 +789,11 @@ def agglomerative_clustering(
     """
     logging.info('clustering method agglomerative_clustering was called')
 
-    filenpath_and_name = r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C' \
-        + str(number_cluster) + "_" + keyfigure_y + '.svg'
+    filenpath_and_name = [r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C'
+                          + str(number_cluster)
+                          + "_"
+                          + keyfigure_y
+                          + '.svg']
 
     if number_cluster <= 2:
         figure_legend_columns = 1  # only two entries therefore one columns
