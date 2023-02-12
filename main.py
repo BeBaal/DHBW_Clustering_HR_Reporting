@@ -31,26 +31,60 @@ OPTION_USE_STANDARDSCALER = True
 OPTION_DESCALING_KEYFIGURES = True
 OPTION_FILTER_COUNTRIES = False
 # If OPTION_FILTER_COUNTRIES equals true filter to following countries:
-OPTION_COUNTRY_LIST = ["DE",
-                       "FR",
-                       "US",
-                       "NL"]
+OPTION_COUNTRY_LIST = [
+    "DE",
+    "FR",
+    "US",
+    "NL"
+]
 OPTION_FILTER_KEYFIGURES = False
-OPTION_FILTER_KEYFIGURES_LIST = ["Eintritte",
-                                 "Austritte",
-                                 "Eintritte Frühfluktuation",
-                                 "Eintritte Frühfluktuation pro MA",
-                                 "Austritte Frühfluktuation",
-                                 "maximale AZV",
-                                 "tats. AZV",
-                                 "MA mit Zeiterfassung",
-                                 "Vertragsstunden",
-                                 "Bruttostunden",
-                                 "Krankstunden bez.",
-                                 "Krankstunden tats.",
-                                 "Krankstunden pro MA",
-                                 "Resturlaub"
-                                 ]
+
+# Attributes for Clustering
+OPTION_FILTER_KEYFIGURES_LIST = [
+    "Eintritte",
+    "Austritte",
+    "Eintritte Frühfluktuation",
+    "Eintritte Frühfluktuation pro MA",
+    "Austritte Frühfluktuation",
+    "maximale AZV",
+    "tats. AZV",
+    "MA mit Zeiterfassung",
+    "Vertragsstunden",
+    "Bruttostunden pro MA",
+    "Bruttostunden",
+    "Krankstunden bez.",
+    "Krankenstand bez. %",
+    "Krankstunden tats.",
+    "Krankstunden pro MA",
+    "Resturlaub",
+    # for export
+    "Austritte pro MA",
+    "Austritte Frühfluktuation pro MA"
+]
+
+# Attributes with high correlation
+# OPTION_FILTER_KEYFIGURES_LIST = [
+#     "Eintritte",
+#     "Austritte",
+#     "Eintritte Frühfluktuation",
+#     "Eintritte Frühfluktuation pro MA",
+#     "Austritte Frühfluktuation",
+#     "maximale AZV",
+#     "tats. AZV",
+#     "Bruttostunden pro MA",
+#     "Krankenstand bez. %",
+#     "Krankstunden pro MA",
+#     "Eintritte pro MA",
+#     "Austritte pro MA",
+#     "Austritte Frühfluktuation pro MA",
+#     "Frühfluktuation",
+#     "Durchschnittsalter",
+#     "Fluktuation",
+#     "tats. AZV pro MA mit Zeiterfassung",
+#     "Vertragsstunden pro MA",
+#     "Krankenstand",
+#     "Resturlaub pro Kopf"
+# ]
 
 
 def main():
@@ -67,6 +101,8 @@ def main():
 
     dataframe = load_files()
 
+    save_statistical_summary(dataframe)
+
     if OPTION_FILTER_COUNTRIES is True:
         dataframe = filter_countries(dataframe)
 
@@ -78,7 +114,6 @@ def main():
     # Generate information about the dataset
     plot_distribution(dataframe)
     plot_correlation(dataframe)
-    save_statistical_summary(dataframe)
 
     # Set x variable for clustering that stays the same
     keyfigure_x = 'Fluktuation'
@@ -133,14 +168,14 @@ def matplotlib_settings():
     Powerpoint or Word relating to the option that was set in the class
     variables.
     """
-    plt.rcParams["font.family"] = "serif"
-    plt.rcParams["font.size"] = "10"
+    plt.rcParams["font.family"] = "Times New Roman"
+    plt.rcParams["font.size"] = "12"
 
     match OPTION_POWERPOINT_OR_WORD:
         case 'Word':
-            plt.rcParams["figure.figsize"] = (20, 10)
+            plt.rcParams["figure.figsize"] = (15, 10)
         case 'Powerpoint':
-            plt.rcParams["figure.figsize"] = (20, 10)
+            plt.rcParams["figure.figsize"] = (20, 20)
 
 
 def descale_dataframe(dataframe, scaler):
@@ -237,9 +272,9 @@ def plot_density(data, keyfigure_x, keyfigure_y):
     """
     logging.info('plot_2_keyfigures_categorical function was called')
 
-    filenpath_and_name = [r'C:\FPA2\Figures\Density\Plot_'
-                          + keyfigure_y
-                          + '.svg']
+    filenpath_and_name = str(r'C:\FPA2\Figures\Density\Plot_'
+                             + keyfigure_y
+                             + '.svg')
 
     # set seaborn style
     sns.set_style("white")
@@ -401,11 +436,11 @@ def plot_2_keyfigures_categorical(
     """
     logging.info('plot_2_keyfigures_categorical function was called')
 
-    filenpath_and_name = [r'C:\FPA2\Figures\Traditional_Clusters\Plot_'
-                          + category
-                          + "_"
-                          + keyfigure_y
-                          + '.svg']
+    filenpath_and_name = str(r'C:\FPA2\Figures\Traditional_Clusters\Plot_'
+                             + category
+                             + "_"
+                             + keyfigure_y
+                             + '.svg')
 
     match category:
         case "Gesellschaftstyp":
@@ -441,10 +476,14 @@ def plot_distribution(dataframe):
 
     filenpath_and_name = r'C:\FPA2\Figures\Attribute_Distribution.svg'
 
-    dataframe.hist(bins=10,
-                   figsize=(40, 20),
+    dataframe.hist(bins=25,
+                   figsize=(40, 40),
                    color='b',
-                   alpha=0.6)
+                   alpha=0.6
+                   )
+
+    # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+
     plt.savefig(filenpath_and_name, bbox_inches="tight")
     plt.close()
 
@@ -462,16 +501,16 @@ def plot_correlation(dataframe):
     # Triangle cross correlation matrix
     filenpath_and_name = r'C:\FPA2\Figures\Attribute_Cross_Correlation.svg'
 
-    mask = np.triu(np.ones_like(dataframe.corr(
-        numeric_only=True),
-        dtype=np.bool_))
+    mask = np.triu(np.ones_like(dataframe.corr(numeric_only=True),
+                                dtype=np.bool_))
 
     heatmap = sns.heatmap(dataframe.corr(numeric_only=True),
                           vmin=-1,
                           vmax=1,
                           mask=mask,
                           annot=True,
-                          cmap='BrBG')
+                          cmap='BrBG',
+                          fmt=".1f")
 
     heatmap.set_title('Correlation Heatmap')
 
@@ -572,11 +611,11 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = [r'C:\FPA2\Figures\KMeans\Plot_C'
-                          + str(number_cluster)
-                          + "_"
-                          + keyfigure_y
-                          + '.svg']
+    filenpath_and_name = str(r'C:\FPA2\Figures\KMeans\Plot_C'
+                             + str(number_cluster)
+                             + "_"
+                             + keyfigure_y
+                             + '.svg')
 
     if number_cluster <= 2:
         figure_legend_columns = 1  # only two entries therefore one columns
@@ -602,6 +641,8 @@ def kmeans(dataframe, number_cluster, keyfigure_x, keyfigure_y):
 
     # Getting unique labels
     u_labels = np.unique(label)
+
+    centroids = descale_dataframe(centroids, scaler)
 
     dataframe = descale_dataframe(dataframe, scaler)
 
@@ -640,11 +681,11 @@ def gaussian(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = [r'C:\FPA2\Figures\Gaussian\Plot_C'
-                          + str(number_cluster)
-                          + "_"
-                          + keyfigure_y
-                          + '.svg']
+    filenpath_and_name = str(r'C:\FPA2\Figures\Gaussian\Plot_C'
+                             + str(number_cluster)
+                             + "_"
+                             + keyfigure_y
+                             + '.svg')
 
     if number_cluster <= 2:
         figure_legend_columns = 1  # only two entries therefore one columns
@@ -695,9 +736,9 @@ def dbscan(dataframe, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method dbscan was called')
 
-    filenpath_and_name = [r'C:\FPA2\Figures\DBscan\Plot_'
-                          + keyfigure_y
-                          + '.svg']
+    filenpath_and_name = str(r'C:\FPA2\Figures\DBscan\Plot_'
+                             + keyfigure_y
+                             + '.svg')
 
     dataframe, scaler = scale_dataframe(dataframe)
 
@@ -741,11 +782,11 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
     """
     logging.info('clustering method kmeans was called')
 
-    filenpath_and_name = [r'C:\FPA2\Figures\BIRCH\Plot_C'
-                          + str(number_cluster)
-                          + "_"
-                          + keyfigure_y
-                          + '.svg']
+    filenpath_and_name = str(r'C:\FPA2\Figures\BIRCH\Plot_C'
+                             + str(number_cluster)
+                             + "_"
+                             + keyfigure_y
+                             + '.svg')
 
     if number_cluster <= 2:
         figure_legend_columns = 1  # only two entries therefore one columns
@@ -777,8 +818,12 @@ def birch(dataframe, number_cluster, keyfigure_x, keyfigure_y):
                     label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Birch C_" + str(number_cluster) + " " +
-              keyfigure_x + " / " + keyfigure_y)
+    plt.title("Birch C_"
+              + str(number_cluster)
+              + " "
+              + keyfigure_x
+              + " / "
+              + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     plt.legend(ncol=figure_legend_columns,
@@ -802,11 +847,12 @@ def agglomerative_clustering(
     """
     logging.info('clustering method agglomerative_clustering was called')
 
-    filenpath_and_name = [r'C:\FPA2\Figures\Agglomeratives_Clustering\Plot_C'
-                          + str(number_cluster)
-                          + "_"
-                          + keyfigure_y
-                          + '.svg']
+    filenpath_and_name = str(r"C:\FPA2\Figures\Agglomeratives_Clustering\Plot"
+                             + "_Cluster"
+                             + str(number_cluster)
+                             + "_"
+                             + keyfigure_y
+                             + '.svg')
 
     if number_cluster <= 2:
         figure_legend_columns = 1  # only two entries therefore one columns
@@ -838,8 +884,12 @@ def agglomerative_clustering(
                     label='Cluster ' + str(i) + ' n=' + str(
                         np.count_nonzero(label == i)))
 
-    plt.title("Agglomeratives Clustering C_" + str(number_cluster) +
-              " " + keyfigure_x + " / " + keyfigure_y)
+    plt.title("Agglomeratives Clustering C_"
+              + str(number_cluster)
+              + " "
+              + keyfigure_x
+              + " / "
+              + keyfigure_y)
     plt.xlabel(keyfigure_x)
     plt.ylabel(keyfigure_y)
     plt.legend(ncol=figure_legend_columns,
