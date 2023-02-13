@@ -43,23 +43,23 @@ OPTION_FILTER_KEYFIGURES = False
 OPTION_FILTER_KEYFIGURES_LIST = [
     "Eintritte",
     "Austritte",
+    "Austritte pro MA",
     "Eintritte Frühfluktuation",
     "Eintritte Frühfluktuation pro MA",
     "Austritte Frühfluktuation",
-    "maximale AZV",
+    "Austritte Frühfluktuation pro MA"
     "tats. AZV",
+    "maximale AZV",
     "MA mit Zeiterfassung",
     "Vertragsstunden",
-    "Bruttostunden pro MA",
     "Bruttostunden",
+    "Bruttostunden pro MA",
     "Krankstunden bez.",
     "Krankenstand bez. %",
     "Krankstunden tats.",
     "Krankstunden pro MA",
     "Resturlaub",
     # for export
-    "Austritte pro MA",
-    "Austritte Frühfluktuation pro MA"
 ]
 
 # Attributes with high correlation
